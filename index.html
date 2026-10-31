@@ -315,6 +315,10 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms));
 const app=$('#app'), main=$('#main'), input=$('#input'), composer=$('#composer'), headline=$('#headline');
 const isTouch=matchMedia('(hover: none)').matches;
 let entered=false, busy=false, chatBusy=false, tookOver=false, t0=Date.now();
+/* hover scares wait until the visitor has settled in and actually moved the mouse */
+let hoverArmAt=Infinity, hoverMoved=0, lastPt=null;
+addEventListener('pointermove',e=>{ if(!entered||hoverMoved>=60)return; if(lastPt) hoverMoved+=Math.hypot(e.clientX-lastPt[0],e.clientY-lastPt[1]); lastPt=[e.clientX,e.clientY]; });
+const hoverArmed=()=>Date.now()>=hoverArmAt&&hoverMoved>=60;
 let px=innerWidth/2, py=innerHeight/2, lastMove=Date.now(), lastScare=Date.now();
 let hoverCount=0; const tally={};
 function dread(){ const s=(Date.now()-t0)/1000; let d=hoverCount<3?0:hoverCount<8?1:hoverCount<15?2:3; if(s>45)d=Math.max(d,1); if(s>100)d=Math.max(d,2); return d; }
@@ -628,7 +632,7 @@ $$('.haunt').forEach(h=>{
   const targets=[...h.querySelectorAll('[data-dread]')]; targets.forEach(t=>t.dataset.calm=t.textContent);
   h.addEventListener('pointerenter',e=>{
     if(!entered||fin.on)return;
-    const synthetic=!e.isTrusted; if(!synthetic){ hoverCount++; const k=targets[0]?.dataset.calm; if(k) tally[k]=(tally[k]||0)+1; }
+    const synthetic=!e.isTrusted; if(!synthetic&&!hoverArmed())return; if(!synthetic){ hoverCount++; const k=targets[0]?.dataset.calm; if(k) tally[k]=(tally[k]||0)+1; }
     const d=dread(); setRoom([.07,.11,.15,.2][d]);
     clearTimeout(h._rv); h.classList.add('possessed'); targets.forEach(t=>scramble(t,t.dataset.dread));
     if(d===0){ whisper(.5); } else if(d===1){ whisper(.6); crackle(.3); } else { Math.random()<.5?sting(.35):creak(.45); whisper(.5); }
@@ -802,7 +806,7 @@ function ambient(){ setTimeout(ambient,8000+Math.random()*7000); if(!entered||bu
 
 $('#clock').textContent=timeStr(); setInterval(tickClock,15000);
 $('#enter').addEventListener('click',()=>{
-  initAudio(); ensureAudio(); entered=true; $('#gate').classList.add('gone'); $('#snd').hidden=false;
+  initAudio(); ensureAudio(); entered=true; hoverArmAt=Date.now()+2000; $('#gate').classList.add('gone'); $('#snd').hidden=false;
   base=.012; setStatic(base); t0=Date.now(); lastMove=Date.now(); lastScare=Date.now();
   setRoom(.07,3); thump(.8); setTimeout(()=>whisper(.4),900);
   const fa=faceAvatar(); $('#ghostAv').style.backgroundImage=`url(${fa})`; $('#ghostPic').src=fa;
