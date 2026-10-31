@@ -155,8 +155,9 @@ body.dark #dark,body.dark #darkFig{opacity:1}
 #finale .tag{position:absolute;left:18px;top:calc(14px + env(safe-area-inset-top,0px));color:#fff;font-size:13px;display:flex;gap:8px;align-items:center;text-shadow:0 1px 2px #000}
 #finale .tag i{width:9px;height:9px;border-radius:50%;background:#e5352b;animation:pulse 1s infinite}
 #finaleMsg{position:fixed;left:0;right:0;bottom:0;padding:90px 20px calc(36px + env(safe-area-inset-bottom,0px));text-align:center;color:#eee;opacity:0;transition:opacity 1.2s;pointer-events:none;z-index:88;background:linear-gradient(rgba(0,0,0,0),rgba(0,0,0,.8) 55%)}
-#finaleMsg .credit{display:block;margin-top:18px;color:rgba(255,255,255,.55);font-size:13px;text-decoration:none;opacity:0;transition:opacity 1s 1.5s}
-#finaleMsg .credit:hover{color:#fff}
+#finaleMsg .credit{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px;margin-top:18px;color:rgba(255,255,255,.55);font-size:13px;opacity:0;transition:opacity 1s 1.5s}
+#finaleMsg .credit a{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid rgba(255,255,255,.25);border-radius:999px;color:rgba(255,255,255,.85);text-decoration:none;transition:background .2s,color .2s,border-color .2s}
+#finaleMsg .credit a:hover{background:#fff;color:#000;border-color:#fff}
 #finaleMsg.on .credit{opacity:1}
 #finaleMsg.on{opacity:1;pointer-events:auto}
 #finaleMsg p{font-size:clamp(20px,3.4vw,30px);margin:0 0 16px;text-shadow:0 2px 14px #000}
@@ -292,7 +293,8 @@ body.dark #dark,body.dark #darkFig{opacity:1}
 <div id="finale"><canvas></canvas><div class="tag"><i></i>Front camera</div></div>
 <canvas id="blood"></canvas>
 <div id="finaleMsg"><p>She’s been in every frame tonight. Screenshot it before she leaves.</p><button id="again">Start over</button>
-  <a class="credit" href="https://www.instagram.com/ankitcreatives/" target="_blank" rel="noopener">Happy Halloween. Made by @ankitcreatives</a></div>
+  <div class="credit">Happy Halloween. Made by
+    <a href="https://www.instagram.com/ankitcreatives/" target="_blank" rel="noopener" aria-label="Follow @ankitcreatives on Instagram"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".6" fill="currentColor"/></svg>@ankitcreatives</a></div></div>
 <canvas id="static"></canvas>
 <div id="scare" aria-hidden="true"><canvas></canvas></div>
 <button id="snd" hidden>Sound on</button>
