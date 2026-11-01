@@ -777,8 +777,6 @@ async function makeCard(fmt){
   const dateY=divY-36, headY=dateY-46*lines.length-56, fadeTop=headY-(wide?140:230);   // wide: shorter fade so the face stays lit
   const fade=g.createLinearGradient(0,fadeTop,0,H); fade.addColorStop(0,'rgba(7,7,7,0)'); fade.addColorStop(.35,'rgba(7,7,7,.82)'); fade.addColorStop(1,'rgba(7,7,7,.96)');
   g.fillStyle=fade; g.fillRect(0,fadeTop,W,H-fadeTop);
-  g.fillStyle='#e5352b'; g.beginPath(); g.arc(80,T+2,9,0,Math.PI*2); g.fill();
-  cardText(g,'CHATWAKE · FRONT CAMERA',102,T+11,'600 26px Geist, system-ui, sans-serif','rgba(255,255,255,.92)');
   cardText(g,fin.frozen?'She was in every frame.':'She saw you anyway.',72,headY,'600 64px Geist, system-ui, sans-serif','#f2f2f2');
   let y=headY+56; for(const l of lines){ cardText(g,l,72,y,'400 32px Geist, system-ui, sans-serif','rgba(255,255,255,.7)'); y+=46; }
   cardText(g,`${timeStr()} · ${d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}`,72,dateY,'400 28px Geist, system-ui, sans-serif','rgba(229,53,43,.95)');
