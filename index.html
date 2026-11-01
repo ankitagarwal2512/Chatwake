@@ -651,18 +651,30 @@ function drawOrbs(g,w,h,amt){ if(amt<=0)return; g.save(); g.globalCompositeOpera
   lg.addColorStop(0,'rgba(0,0,0,0)'); lg.addColorStop(.5,`rgba(255,238,228,${.12*amt})`); lg.addColorStop(1,'rgba(0,0,0,0)'); g.fillStyle=lg; g.fillRect(0,0,w,h); g.restore(); }
 function slices(g,w,h,n){ for(let i=0;i<n;i++){ const y=Math.random()*h|0, bh=4+Math.random()*28|0; g.drawImage(g.canvas,0,y,w,bh,(Math.random()-.5)*w*.08,y,w,bh); } }
 function takeSnap(){ if(!liveReady())return null; const c=document.createElement('canvas'); c.width=fv.width; c.height=fv.height; drawCover(c.getContext('2d'),vid,vid.videoWidth,vid.videoHeight,c.width,c.height,true); return c; }
+/* the figure behind the visitor: drawn soft, faded at the hem and graded with the photo so she sits in the room, not on top of it */
+const gcv=document.createElement('canvas'), gcx=gcv.getContext('2d');
+function ghostBehind(g,w,h){ if(fin.fig<=.01)return;
+  if(gcv.width!==w||gcv.height!==h){ gcv.width=w; gcv.height=h; }
+  const fs=Math.min(h/180,w/360), close=fin.close, sc=close?fs:fs*.7, x=w*(close?(h>w?.15:.19):.15), y=close?(h>w?h*.08:-h*.03):h*.04;
+  const c=gcx; c.globalCompositeOperation='source-over'; c.globalAlpha=1; c.clearRect(0,0,w,h);
+  figure(c,x,y,sc,close?.85:.7,close?-.22:-.2);
+  c.globalCompositeOperation='source-atop'; c.fillStyle='rgba(58,50,50,.38)'; c.fillRect(0,0,w,h);          // lift the blacks to the room's shadows
+  c.globalCompositeOperation='destination-in';                                                               // body dissolves instead of ending in a line
+  const hem=c.createLinearGradient(0,y+120*sc,0,y+300*sc); hem.addColorStop(0,'rgba(0,0,0,1)'); hem.addColorStop(1,'rgba(0,0,0,0)');
+  c.fillStyle=hem; c.fillRect(0,0,w,h);
+  const a=fin.fig*(Math.random()<.06?.3:1), b=Math.max(1.2,sc*.75);
+  g.save(); g.globalAlpha=a*.85; g.filter=`blur(${b}px)`; g.drawImage(gcv,0,0);                           // slightly out of focus, she's behind you
+  g.globalAlpha=a*.25; g.filter=`blur(${b*5}px)`; g.drawImage(gcv,0,0); g.restore(); }                     // faint haze around her
 function paintFinale(){
   const g=fg, w=fv.width, h=fv.height; colorNow+=(fin.color-colorNow)*.05; fin.fig+=(fin.figTarget-fin.fig)*.08;
   if(fin.frozen&&snap){
     g.fillStyle='#000'; g.fillRect(0,0,w,h);
     g.drawImage(snap,0,0,w,h);                                              // the frozen face stays clear
-    grade(g,w,h,.15,true);
-  }else if(liveReady()){ drawCover(g,vid,vid.videoWidth,vid.videoHeight,w,h,true); grade(g,w,h,colorNow,false);
+    ghostBehind(g,w,h); grade(g,w,h,.15,true);
+  }else if(liveReady()){ drawCover(g,vid,vid.videoWidth,vid.videoHeight,w,h,true); ghostBehind(g,w,h); grade(g,w,h,colorNow,false);
     const e=echo[echoI]; e.getContext('2d').drawImage(fv,0,0,e.width,e.height); echoI=(echoI+1)%ECHO;
     if(fin.echo>0){ g.save(); g.globalAlpha=fin.echo; g.globalCompositeOperation='screen'; g.drawImage(echo[echoI],w*.035,-h*.01,w,h); g.restore(); }
-  }else{ g.fillStyle='#000'; g.fillRect(0,0,w,h); }
-  if(fin.fig>.01){ g.save(); g.globalAlpha=fin.fig*(Math.random()<.06?.3:1);
-    const fs=Math.min(h/180,w/360), fx=h>w?.15:.19; if(fin.close) figure(g,w*fx,h>w?h*.08:-h*.03,fs,.85,-.22); else figure(g,w*.15,h*.04,fs*.7,.7,-.2); g.restore(); }
+  }else{ g.fillStyle='#000'; g.fillRect(0,0,w,h); ghostBehind(g,w,h); }
   if(fin.face>0){ g.save(); g.globalAlpha=fin.face; const s=h/74*(1+Math.random()*.08);
     figure(g,w*.5-9.3*s+(Math.random()-.5)*26,h*.45-46*s+(Math.random()-.5)*26,s,1,-.2+(Math.random()-.5)*.16,1.6+Math.random()*.35); g.restore();
     g.fillStyle='rgba(140,0,0,.24)'; g.fillRect(0,0,w,h); }
@@ -933,11 +945,12 @@ function endChat(){ $('#msgs').innerHTML='';
   const r=document.createElement('button'); r.className='restart'; r.textContent='Start over'; r.onclick=reset; $('#msgs').append(n,r); }
 function reset(){ stats={start:Date.now(),jumps:0,first:'',name:''}; closeFinale(); bloodClear(); $('#msgs').innerHTML=''; main.classList.remove('chatting'); input.value='';
   chatBusy=false; tookOver=false; busy=false; lastScare=Date.now(); setRoom(.08); }
+const toEnd=()=>{ const n=input.value.length; try{ input.setSelectionRange(n,n); }catch(e){} input.scrollLeft=input.scrollWidth; };   // keep the ghost's newest words in view on narrow screens
 async function possessInput(){
   input.readOnly=true; composer.classList.add('possessed'); whisper(.6); thump(.5);
-  while(input.value.length){ input.value=input.value.slice(0,-1); keyClick(); await wait(30); }
+  while(input.value.length){ input.value=input.value.slice(0,-1); toEnd(); keyClick(); await wait(30); }
   await wait(500);
-  for(const c of `it’s ${timeStr().toLowerCase()}. ${NIGHT?'why are you still awake?':'why is it so dark in here?'}`){ input.value+=c; keyClick(); await wait(70+Math.random()*90); }
+  for(const c of `it’s ${timeStr().toLowerCase()}. ${NIGHT?'why are you still awake?':'why is it so dark in here?'}`){ input.value+=c; toEnd(); keyClick(); await wait(70+Math.random()*90); }
   whisper(.5); await wait(800); composer.classList.remove('possessed'); input.readOnly=false; input.focus();
 }
 input.addEventListener('input',()=>{ lastMove=Date.now(); if(!tookOver&&!chatBusy&&input.value.length>=8){ tookOver=true; possessInput(); } });
