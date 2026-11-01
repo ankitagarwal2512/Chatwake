@@ -241,14 +241,14 @@ body.dark #dark,body.dark #darkFig{opacity:1}
 #static{position:fixed;inset:0;width:100%;height:100%;z-index:90;pointer-events:none;image-rendering:pixelated;opacity:0;mix-blend-mode:multiply}
 #static.hot{mix-blend-mode:screen}
 
-#gate{position:fixed;inset:0;z-index:200;background:rgba(20,20,18,.32);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:grid;place-items:center;padding:20px;transition:opacity .5s}
+#gate{position:fixed;inset:0;z-index:200;background:rgba(10,10,9,.62);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:grid;place-items:center;padding:20px;transition:opacity .5s}
 #gate.gone{opacity:0;pointer-events:none}
-.modal{background:var(--chip);color:var(--text);border-radius:22px;padding:28px 28px 22px;width:min(400px,100%);text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.2)}
+.modal{background:var(--chip);color:var(--text);border:1px solid rgba(255,255,255,.1);border-radius:22px;padding:28px 28px 22px;width:min(400px,100%);text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.6)}
 .modal .mark{width:44px;height:44px;border-radius:14px;background:var(--ink);margin:0 auto 14px;display:grid;place-items:center;color:var(--ink-text)}
 .modal h2{margin:0 0 6px;font-size:22px;font-weight:600;letter-spacing:-.01em}
-.modal p{margin:0 0 20px;color:var(--muted)}
+.modal p{margin:0 0 20px;color:rgba(255,255,255,.82)}
 .modal button{width:100%;border:0;background:var(--ink);color:var(--ink-text);padding:12px;border-radius:999px;cursor:pointer;font-size:15px;font-weight:500}
-.modal small{display:block;margin-top:14px;color:var(--muted);font-size:12px}
+.modal small{display:block;margin-top:14px;color:rgba(255,255,255,.68);font-size:12px}
 #snd{position:fixed;left:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:72;border:1px solid var(--border);background:var(--chip);color:var(--muted);border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer}
 
 @media (max-width:800px){
