@@ -217,6 +217,14 @@ body.dark #dark,body.dark #darkFig{opacity:1}
 #finaleMsg button.primary:disabled{opacity:.6;cursor:wait}
 #finaleMsg #savePic{display:inline-flex;align-items:center;gap:8px}
 #finaleMsg #shareNote{display:block;margin-top:12px;font-size:12px;color:rgba(255,255,255,.5)}
+#finaleMsg #prankHint{display:block;margin-top:6px;font-size:12px;color:rgba(255,255,255,.5)}
+#prank{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:90;max-width:min(320px,calc(100vw - 32px));padding:14px 16px;border-radius:16px;background:rgba(10,10,9,.88);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.14);color:#eee;font-size:13px;opacity:0;transform:translateY(8px);transition:opacity .4s,transform .4s;pointer-events:none}
+#prank.on{opacity:1;transform:none}
+#prank b{display:block;margin-bottom:8px;font-size:14px}
+#prank ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:auto 1fr;gap:6px 10px}
+#prank small{display:block;margin-top:10px;color:rgba(255,255,255,.5)}
+kbd{display:inline-block;min-width:20px;padding:1px 6px;border:1px solid rgba(255,255,255,.3);border-bottom-width:2px;border-radius:6px;font:600 12px/1.4 ui-monospace,monospace;text-align:center;color:#fff}
+@media (hover:none){#prankHint,#prank{display:none!important}}
 #cardView{position:fixed;inset:0;z-index:95;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.86);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);color:#eee;text-align:center}
 #cardView.on{display:flex}
 #cardView .box{position:relative;display:flex;flex-direction:column;align-items:center;gap:12px;width:min(480px,100%);max-height:100%}
@@ -367,6 +375,7 @@ body.dark #dark,body.dark #darkFig{opacity:1}
 <div id="finaleMsg"><p>She’s been in every frame tonight. Save it before she leaves.</p>
   <div class="acts"><button id="savePic" class="primary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>Share my haunted photo</button><button id="again">Start over</button></div>
   <small id="shareNote">Your photo never leaves your device.</small>
+  <small id="prankHint">Scare someone else → press <kbd>?</kbd> for prank controls</small>
   <div class="credit">Happy Halloween. Made by
     <a href="https://www.instagram.com/ankitcreatives/" target="_blank" rel="noopener" aria-label="Follow @ankitcreatives on Instagram"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".6" fill="currentColor"/></svg>ankitcreatives</a></div></div>
 <div id="cardView" role="dialog" aria-modal="true" aria-label="Your haunted photo">
@@ -382,6 +391,7 @@ body.dark #dark,body.dark #darkFig{opacity:1}
 <canvas id="static"></canvas>
 <div id="scare" aria-hidden="true"><canvas></canvas></div>
 <button id="snd" hidden>Sound on</button>
+<div id="prank" role="note" aria-label="Prank controls"><b>Prank mode</b><ul><li><kbd>L</kbd></li><li>Lights out</li><li><kbd>J</kbd></li><li>Jump scare</li><li><kbd>B</kbd></li><li>Blood</li><li><kbd>G</kbd></li><li>Ghost cursor</li><li><kbd>N</kbd></li><li>Notification</li><li><kbd>C</kbd></li><li>Camera ending</li></ul><small>Click outside the message box first. Press ? to show this again.</small></div>
 
 <div id="gate">
   <div class="modal" role="dialog" aria-labelledby="gt">
@@ -1001,11 +1011,16 @@ input.addEventListener('input',()=>{ lastMove=Date.now(); if(!tookOver&&!chatBus
 input.addEventListener('keydown',e=>{ if(!input.readOnly) keyClick(); if(e.key==='Enter'){ e.preventDefault(); send(); } });
 sendBtn.addEventListener('click',send);
 $$('.chip').forEach(c=>c.addEventListener('click',()=>{ if(chatBusy)return; input.value=c.querySelector('[data-dread]').dataset.calm; send(); }));
-$("#again").addEventListener("click",()=>{ track("play_again"); reset(); });
+$("#again").addEventListener("click",()=>{ track("play_again"); reset(); showPrank(); });
+/* prank controls: kept secret until the visitor has seen the ending once */
+let prankShown=false;
+function showPrank(ms=7000){ if(isTouch)return; const p=$("#prank"); p.classList.add("on"); clearTimeout(p._t); p._t=setTimeout(()=>p.classList.remove("on"),ms);
+  if(!prankShown){ prankShown=true; track("prank_mode"); } }
 
 /* recording shortcuts (click outside the message box first): L lights out, J jump scare, B blood, G ghost, N notification, C camera ending */
 addEventListener('keydown',e=>{
   lastMove=Date.now(); if(!entered||document.activeElement===input)return; const k=e.key.toLowerCase();
+  if(e.key==="?"){ showPrank(); return; }
   if(k==='l') lightsOut();
   if(k==='j'&&!scaring) jumpscare();
   if(k==='b') bleedTop(10);
