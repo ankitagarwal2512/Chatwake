@@ -331,7 +331,7 @@ body.dark #dark,body.dark #darkFig{opacity:1}
     <div class="fmt" role="radiogroup" aria-label="Photo size"><button class="on" data-fmt="post" role="radio" aria-checked="true">Post 4:5</button><button data-fmt="story" role="radio" aria-checked="false">Story 9:16</button></div>
     <img id="cardImg" alt="Your ChatWake haunted photo">
     <div class="cap"><span id="cvCap"></span><button id="cvCapCopy">Copy caption</button></div>
-    <div class="acts"><button id="cvLi" class="primary"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5ZM3 9.75h4v11H3v-11Zm6.5 0h3.8v1.6h.06c.53-1 1.82-2.05 3.75-2.05 4 0 4.74 2.6 4.74 6v5.45h-4v-4.83c0-1.15-.02-2.63-1.6-2.63-1.6 0-1.85 1.25-1.85 2.55v4.91h-4v-11Z"/></svg>LinkedIn</button><button id="cvIg" class="primary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".6" fill="currentColor"/></svg>Instagram</button><button id="cvMore">More apps</button></div>
+    <div class="acts"><button id="cvIg" class="primary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".6" fill="currentColor"/></svg>Instagram</button><button id="cvLi" class="primary"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5ZM3 9.75h4v11H3v-11Zm6.5 0h3.8v1.6h.06c.53-1 1.82-2.05 3.75-2.05 4 0 4.74 2.6 4.74 6v5.45h-4v-4.83c0-1.15-.02-2.63-1.6-2.63-1.6 0-1.85 1.25-1.85 2.55v4.91h-4v-11Z"/></svg>LinkedIn</button><button id="cvMore">More apps</button></div>
     <small id="cvNote"></small>
   </div>
 </div>
@@ -750,11 +750,8 @@ function sheet(after){ copyText(caption()); const f=new File([cardBlob],`chatwak
 function tab(url){ const w=open('about:blank','_blank'); if(w){ w.opener=null; w.location.href=url; } return w; }   // opened inside the click so it isn't blocked
 $('#cvLi').addEventListener('click',async()=>{ if(!cardBlob)return;
   if(mobileShare) return sheet('Posted? Tag @ankitcreatives so she can find you.');
-  const w=tab(`https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(caption())}`);
-  try{ await navigator.clipboard.write([new ClipboardItem({'image/png':cardBlob})]);
-    cvNote(`Caption is filled in. Press ${/Mac/.test(navigator.platform)?'⌘':'Ctrl'}+V in the LinkedIn post box to add your photo.`); }
-  catch(e){ download(cardBlob); cvNote('Caption is filled in. Drag the downloaded photo into the LinkedIn post box.'); }
-  if(!w) cvNote('Allow pop-ups for this site, then try again.'); });
+  download(cardBlob); const ok=await copyText(caption()); const w=tab('https://www.linkedin.com/feed/');   // LinkedIn's prefilled share box can't take a photo
+  cvNote(w?`Photo downloaded${ok?' and caption copied':''}. On LinkedIn, click Start a post → Photo, pick it${ok?', then paste the caption':''}.`:'Allow pop-ups for this site, then try again.'); });
 $('#cvIg').addEventListener('click',async()=>{ if(!cardBlob)return;
   if(mobileShare) return sheet('Caption copied. Long-press the caption box and tap Paste.');
   download(cardBlob); const ok=await copyText(caption()); tab('https://www.instagram.com/');
