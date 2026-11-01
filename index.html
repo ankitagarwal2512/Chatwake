@@ -261,6 +261,8 @@ body.dark #dark,body.dark #darkFig{opacity:1}
   #scare canvas{animation-duration:2s}
 }
 </style>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-RLBGRQJLNS"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-RLBGRQJLNS");</script>
 </head>
 <body>
 
@@ -394,6 +396,7 @@ body.dark #dark,body.dark #darkFig{opacity:1}
 <script>
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const track=(name,p)=>{ try{ gtag("event",name,p||{}); }catch(e){} };   // Google Analytics funnel steps
 const app=$('#app'), main=$('#main'), input=$('#input'), composer=$('#composer'), headline=$('#headline');
 const isTouch=matchMedia('(hover: none)').matches;
 let entered=false, busy=false, chatBusy=false, tookOver=false, t0=Date.now();
@@ -737,7 +740,7 @@ async function finale(live){
   setRoom(0,.1); heart(false); fin.glitch=0; await wait(1000);
   jumpscare(); await wait(1250);
   stopCamera(); fin.frozen=!!snap; fin.close=true; fin.figTarget=.9; fin.glitch=.04; fin.echo=0; bloodClear(); bleedTop(6,.05,.14);   // keep the face clear on the last frame
-  await wait(1100); whisper(.5); $('#finaleMsg').classList.add('on'); setRoom(.12);
+  await wait(1100); whisper(.5); $('#finaleMsg').classList.add('on'); setRoom(.12); track("finished");
 }
 function closeFinale(){ closeCard(); fin.on=false; stopCamera(); $('#finale').classList.remove('on'); $('#finaleMsg').classList.remove('on'); }
 
@@ -785,7 +788,7 @@ async function renderCard(){ const img=$('#cardImg'); img.classList.add('loading
   cardBlob=await makeCard(cardFmt); if(cardUrl) URL.revokeObjectURL(cardUrl); cardUrl=URL.createObjectURL(cardBlob);
   img.src=cardUrl; img.classList.remove('loading'); }
 let mobileShare=false;
-async function openCard(){ const btn=$('#savePic'); btn.disabled=true;
+async function openCard(){ const btn=$('#savePic'); btn.disabled=true; track("share_open");
   try{ $('#cvCap').textContent=caption().split('\n')[0];
     mobileShare=isTouch&&canFileShare();                                    // phones hand the photo to the app; laptops prefill or copy
     const laptop=!isTouch; $('#cardView .fmt [data-fmt=wide]').hidden=!laptop;   // laptops add a landscape size and start on it; phones choose post or story
@@ -806,15 +809,15 @@ $$('#cardView .fmt button').forEach(b=>b.addEventListener('click',()=>{ if(b.dat
 function sheet(after){ copyText(caption()); const f=new File([cardBlob],`chatwake-haunted-${cardFmt}.png`,{type:'image/png'});
   navigator.share({files:[f],text:caption()}).then(()=>cvNote(after)).catch(()=>{}); }
 function tab(url){ const w=open('about:blank','_blank'); if(w){ w.opener=null; w.location.href=url; } return w; }   // opened inside the click so it isn't blocked
-$('#cvLi').addEventListener('click',async()=>{ if(!cardBlob)return;
+$('#cvLi').addEventListener('click',async()=>{ if(!cardBlob)return; track("share",{method:"linkedin"});
   if(mobileShare) return sheet('Posted? Tag @ankitcreatives so she can find you.');
   download(cardBlob); const ok=await copyText(caption()); const w=tab('https://www.linkedin.com/feed/');   // LinkedIn's prefilled share box can't take a photo
   cvNote(w?`Photo downloaded${ok?' and caption copied':''}. On LinkedIn, click Start a post → Photo, pick it${ok?', then paste the caption':''}.`:'Allow pop-ups for this site, then try again.'); });
-$('#cvIg').addEventListener('click',async()=>{ if(!cardBlob)return;
+$('#cvIg').addEventListener('click',async()=>{ if(!cardBlob)return; track("share",{method:"instagram"});
   if(mobileShare) return sheet('Caption copied. Long-press the caption box and tap Paste.');
   download(cardBlob); const ok=await copyText(caption()); tab('https://www.instagram.com/');
   cvNote(`Photo downloaded${ok?' and caption copied':''}. On Instagram, click Create and pick the photo.`); });
-$('#cvMore').addEventListener('click',()=>{ if(!cardBlob)return;
+$('#cvMore').addEventListener('click',()=>{ if(!cardBlob)return; track("share",{method:mobileShare?"more_apps":"download"});
   if(mobileShare) return sheet('Tag @ankitcreatives so she can find you.');
   download(cardBlob); cvNote('Saved to your downloads.'); });
 $('#cvCapCopy').addEventListener('click',async()=>{ cvNote(await copyText(caption())?'Caption copied.':'Couldn’t copy the caption.'); });
@@ -966,7 +969,7 @@ async function weirdLines(text){
 }
 async function send(){
   const text=input.value.trim(); if(chatBusy||input.readOnly)return; if(!text){ glitch(); return; }
-  chatBusy=true; busy=true; main.classList.add('chatting'); input.value='';
+  chatBusy=true; busy=true; main.classList.add('chatting'); input.value=''; track("chatted");
   if(!stats.first) stats.first=text; bubble('user',text); await wait(800);
   const b=bubble('ai',''); b.classList.add('typing'); await wait(1500); b.classList.remove('typing');
   for(const l of await weirdLines(text)){ await typeInto(b,l,40); await wait(900); whisper(.55); }
@@ -978,8 +981,8 @@ function cameraCard(){
   const c=document.createElement('div'); c.className='camcard';
   c.innerHTML='<div class="ci"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="m16 10 6-3v10l-6-3"/></svg></div><div><b>ChatWake wants to use your camera</b><p>Your video stays on this device. Nothing is recorded or uploaded.</p><div class="row"><button class="allow">Allow</button><button class="deny">Not now</button></div></div>';
   $('#msgs').appendChild(c); $('#thread').scrollTop=1e6; whisper(.6);
-  c.querySelector('.allow').onclick=()=>{ c.remove(); startCamera().then(ok=>finale(ok)); };
-  c.querySelector('.deny').onclick=async()=>{ c.remove(); const b=bubble('ai',''); await typeInto(b,'That’s okay. I can already see you.',60); await wait(900); finale(false); };
+  c.querySelector('.allow').onclick=()=>{ c.remove(); track("camera_allow"); startCamera().then(ok=>finale(ok)); };
+  c.querySelector('.deny').onclick=async()=>{ c.remove(); track("camera_deny"); const b=bubble('ai',''); await typeInto(b,'That’s okay. I can already see you.',60); await wait(900); finale(false); };
 }
 function endChat(){ $('#msgs').innerHTML='';
   const n=document.createElement('div'); n.className='note'; n.textContent='Guest ended the conversation. Your changes were not saved.';
@@ -998,7 +1001,7 @@ input.addEventListener('input',()=>{ lastMove=Date.now(); if(!tookOver&&!chatBus
 input.addEventListener('keydown',e=>{ if(!input.readOnly) keyClick(); if(e.key==='Enter'){ e.preventDefault(); send(); } });
 sendBtn.addEventListener('click',send);
 $$('.chip').forEach(c=>c.addEventListener('click',()=>{ if(chatBusy)return; input.value=c.querySelector('[data-dread]').dataset.calm; send(); }));
-$('#again').addEventListener('click',reset);
+$("#again").addEventListener("click",()=>{ track("play_again"); reset(); });
 
 /* recording shortcuts (click outside the message box first): L lights out, J jump scare, B blood, G ghost, N notification, C camera ending */
 addEventListener('keydown',e=>{
@@ -1024,7 +1027,7 @@ function ambient(){ setTimeout(ambient,8000+Math.random()*7000); if(!entered||bu
 
 $('#clock').textContent=timeStr(); setInterval(tickClock,15000);
 $('#enter').addEventListener('click',()=>{
-  initAudio(); ensureAudio(); entered=true; stats.start=Date.now(); hoverArmAt=Date.now()+2000; $('#gate').classList.add('gone'); $('#snd').hidden=false;
+  initAudio(); ensureAudio(); entered=true; stats.start=Date.now(); track("tried_it"); hoverArmAt=Date.now()+2000; $('#gate').classList.add('gone'); $('#snd').hidden=false;
   base=.012; setStatic(base); t0=Date.now(); lastMove=Date.now(); lastScare=Date.now();
   setRoom(.07,3); thump(.8); setTimeout(()=>whisper(.4),900);
   const fa=faceAvatar(); $('#ghostAv').style.backgroundImage=`url(${fa})`; $('#ghostPic').src=fa;
