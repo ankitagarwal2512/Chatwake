@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -18,8 +18,7 @@
 <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
-<meta name="theme-color" content="#f7f7f5" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#171716" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#171716">
 <meta name="apple-mobile-web-app-title" content="ChatWake">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -180,6 +179,8 @@ body.dark #dark,body.dark #darkFig{opacity:1}
 #cardView{position:fixed;inset:0;z-index:95;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.86);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);color:#eee;text-align:center}
 #cardView.on{display:flex}
 #cardView .box{position:relative;display:flex;flex-direction:column;align-items:center;gap:12px;width:min(480px,100%);max-height:100%}
+#cardView .box.wide{width:min(760px,100%)}
+#cardView .fmt button[hidden]{display:none}
 #cardView .fmt{display:inline-flex;gap:2px;padding:3px;border:1px solid rgba(255,255,255,.18);border-radius:999px;background:rgba(0,0,0,.45)}
 #cardView .fmt button{border:0;background:none;padding:5px 14px;font-size:12px;color:rgba(255,255,255,.6)}
 #cardView .fmt button.on{background:rgba(255,255,255,.16);color:#fff}
@@ -328,7 +329,7 @@ body.dark #dark,body.dark #darkFig{opacity:1}
 <div id="cardView" role="dialog" aria-modal="true" aria-label="Your haunted photo">
   <div class="box">
     <button class="x" id="cvClose" aria-label="Close">×</button>
-    <div class="fmt" role="radiogroup" aria-label="Photo size"><button class="on" data-fmt="post" role="radio" aria-checked="true">Post 4:5</button><button data-fmt="story" role="radio" aria-checked="false">Story 9:16</button></div>
+    <div class="fmt" role="radiogroup" aria-label="Photo size"><button data-fmt="wide" role="radio" aria-checked="false">16:9</button><button class="on" data-fmt="post" role="radio" aria-checked="true">Post 4:5</button><button data-fmt="story" role="radio" aria-checked="false">Story 9:16</button></div>
     <img id="cardImg" alt="Your ChatWake haunted photo">
     <div class="cap"><span id="cvCap"></span><button id="cvCapCopy">Copy caption</button></div>
     <div class="acts"><button id="cvIg" class="primary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".6" fill="currentColor"/></svg>Instagram</button><button id="cvLi" class="primary"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5ZM3 9.75h4v11H3v-11Zm6.5 0h3.8v1.6h.06c.53-1 1.82-2.05 3.75-2.05 4 0 4.74 2.6 4.74 6v5.45h-4v-4.83c0-1.15-.02-2.63-1.6-2.63-1.6 0-1.85 1.25-1.85 2.55v4.91h-4v-11Z"/></svg>LinkedIn</button><button id="cvMore">More apps</button></div>
@@ -585,13 +586,13 @@ function addDrip(x,y,max,w){ drips.push({x,y0:y,y,max,w,v:.4+Math.random()*1.2,d
 function sag(x,y,w){ sags.push({x,y,rx:w*.9,ry:w*.6}); }
 function bleedFrom(el){ const r=el.getBoundingClientRect(), n=2+(Math.random()*3|0);
   for(let i=0;i<n;i++){ const x=r.left+8+Math.random()*Math.max(1,r.width-16), w=3+Math.random()*4; sag(x,r.bottom,w); addDrip(x,r.bottom+w*.4,50+Math.random()*190,w); } }
-function bleedTop(n){ const cols=Math.ceil(innerWidth/COL)+2, ph=[0,0,0].map(()=>Math.random()*6.28), add=[];
+function bleedTop(n,lo=.25,span=.95){ const cols=Math.ceil(innerWidth/COL)+2, ph=[0,0,0].map(()=>Math.random()*6.28), add=[];
   while(film.length<cols) film.push(0);
   for(let i=0;i<cols;i++){ const x=i*COL; add[i]=12+7*Math.sin(x/170+ph[0])+4*Math.sin(x/61+ph[1])+2*Math.sin(x/23+ph[2]); }
   const starts=[]; for(let k=0;k<n;k++){ const x=Math.random()*innerWidth, w=4+Math.random()*9; starts.push([x,w]);
     for(let i=0;i<cols;i++){ const d=(i*COL-x)/(w*2.2); add[i]+=w*1.3*Math.exp(-d*d); } }
   for(let i=0;i<cols;i++) film[i]=Math.max(film[i],add[i]);
-  for(const [x,w] of starts) addDrip(x,filmAt(x)-w*.3,innerHeight*(.25+Math.random()*.95),w);
+  for(const [x,w] of starts) addDrip(x,filmAt(x)-w*.3,innerHeight*(lo+Math.random()*span),w);
   bloodDirty=true; }
 function bloodTick(){
   for(const d of drips){ if(d.done)continue;
@@ -622,7 +623,7 @@ function drawBlood(){ const r=devicePixelRatio||1, W=innerWidth, H=innerHeight;
   for(const s of sags){ g.beginPath(); g.ellipse(s.x,s.y,s.rx,s.ry,0,0,Math.PI); g.fill(); }
   for(const d of drips) dripShapes(g,d);
   g.globalCompositeOperation='source-atop';                                                         // colour + wet sheen, kept inside the liquid
-  const grad=g.createLinearGradient(0,0,0,H); grad.addColorStop(0,'#3a0000'); grad.addColorStop(.2,'#5a0303'); grad.addColorStop(1,'#700707');
+  const grad=g.createLinearGradient(0,0,0,H); grad.addColorStop(0,'#4a0000'); grad.addColorStop(.2,'#760606'); grad.addColorStop(1,'#940b0b');   // bright enough to read on the dark UI
   g.fillStyle=grad; g.fillRect(0,0,W,H);
   g.lineCap='round'; g.strokeStyle='rgba(255,120,120,.3)';
   for(const d of drips){ const P=d.pts; if(P.length<2)continue; g.lineWidth=Math.max(1,d.w*.15); g.beginPath();
@@ -652,26 +653,26 @@ function slices(g,w,h,n){ for(let i=0;i<n;i++){ const y=Math.random()*h|0, bh=4+
 function takeSnap(){ if(!liveReady())return null; const c=document.createElement('canvas'); c.width=fv.width; c.height=fv.height; drawCover(c.getContext('2d'),vid,vid.videoWidth,vid.videoHeight,c.width,c.height,true); return c; }
 function paintFinale(){
   const g=fg, w=fv.width, h=fv.height; colorNow+=(fin.color-colorNow)*.05; fin.fig+=(fin.figTarget-fin.fig)*.08;
-  if(fin.frozen&&snap){ fin.melt=Math.min(.5,fin.melt+.0025);
+  if(fin.frozen&&snap){
     g.fillStyle='#000'; g.fillRect(0,0,w,h);
-    for(let x=0;x<w;x+=5){ const k=Math.pow(.5+.5*Math.sin(x*.045+fin.seed)*Math.cos(x*.013),2), off=fin.melt*h*k; g.drawImage(snap,x,0,5,h,x,off,5,h); }
+    g.drawImage(snap,0,0,w,h);                                              // the frozen face stays clear
     grade(g,w,h,.15,true);
   }else if(liveReady()){ drawCover(g,vid,vid.videoWidth,vid.videoHeight,w,h,true); grade(g,w,h,colorNow,false);
     const e=echo[echoI]; e.getContext('2d').drawImage(fv,0,0,e.width,e.height); echoI=(echoI+1)%ECHO;
     if(fin.echo>0){ g.save(); g.globalAlpha=fin.echo; g.globalCompositeOperation='screen'; g.drawImage(echo[echoI],w*.035,-h*.01,w,h); g.restore(); }
   }else{ g.fillStyle='#000'; g.fillRect(0,0,w,h); }
   if(fin.fig>.01){ g.save(); g.globalAlpha=fin.fig*(Math.random()<.06?.3:1);
-    if(fin.close) figure(g,w*.19,-h*.03,h/180,.85,-.22); else figure(g,w*.15,h*.04,h/260,.7,-.2); g.restore(); }
+    const fs=Math.min(h/180,w/360), fx=h>w?.15:.19; if(fin.close) figure(g,w*fx,h>w?h*.08:-h*.03,fs,.85,-.22); else figure(g,w*.15,h*.04,fs*.7,.7,-.2); g.restore(); }
   if(fin.face>0){ g.save(); g.globalAlpha=fin.face; const s=h/74*(1+Math.random()*.08);
     figure(g,w*.5-9.3*s+(Math.random()-.5)*26,h*.45-46*s+(Math.random()-.5)*26,s,1,-.2+(Math.random()-.5)*.16,1.6+Math.random()*.35); g.restore();
     g.fillStyle='rgba(140,0,0,.24)'; g.fillRect(0,0,w,h); }
   drawOrbs(g,w,h,fin.orb); if(Math.random()<fin.glitch) slices(g,w,h,3);
   if(Math.random()<.06){ g.fillStyle=`rgba(0,0,0,${Math.random()*.3})`; g.fillRect(0,0,w,h); }
-  vignette(g,w,h,.85); grain(g,w,h,.11); hud(g,w,h);
+  vignette(g,w,h,fin.frozen?.6:.85); grain(g,w,h,.11); hud(g,w,h);
 }
 function jolt(ms){ const f=$('#finale'); f.classList.add('shake','flash'); setTimeout(()=>f.classList.remove('flash'),90); setTimeout(()=>f.classList.remove('shake'),ms); }
 async function finale(live){
-  busy=true; chatBusy=true; fin={on:true,color:1,fig:0,figTarget:0,glitch:0,orb:0,echo:0,close:false,frozen:false,melt:0,seed:Math.random()*9};
+  busy=true; chatBusy=true; fin={on:true,color:1,fig:0,figTarget:0,glitch:0,orb:0,echo:0,close:false,frozen:false};
   colorNow=1; snap=null; $('#finale').classList.add('on'); $('#finaleMsg').classList.remove('on');
   setRoom(.18); heart(true,90); await wait(live?1000:300);
   snap=takeSnap(); cackle(.45); await wait(live?900:700);
@@ -682,7 +683,7 @@ async function finale(live){
   fin.face=0; wail(.65,2.4); sting(.6); bleedTop(8); await wait(1700);
   setRoom(0,.1); heart(false); fin.glitch=0; await wait(1000);
   jumpscare(); await wait(1250);
-  stopCamera(); fin.frozen=!!snap; fin.close=true; fin.figTarget=.9; fin.glitch=.04; fin.echo=0; bleedTop(8);
+  stopCamera(); fin.frozen=!!snap; fin.close=true; fin.figTarget=.9; fin.glitch=.04; fin.echo=0; bloodClear(); bleedTop(6,.05,.14);   // keep the face clear on the last frame
   await wait(1100); whisper(.5); $('#finaleMsg').classList.add('on'); setRoom(.12);
 }
 function closeFinale(){ closeCard(); fin.on=false; stopCamera(); $('#finale').classList.remove('on'); $('#finaleMsg').classList.remove('on'); }
@@ -694,29 +695,30 @@ function coverAt(g,src,dw,dh,cx,cy=.5){ const sw=src.width, sh=src.height, sc=Ma
   g.drawImage(src,Math.max(0,Math.min(sw-vw,cx*sw-vw/2)),(sh-vh)*cy,vw,vh,0,0,dw,dh); }
 function cardText(g,t,x,y,font,color,align='left'){ g.font=font; g.fillStyle=color; g.textAlign=align; g.fillText(t,x,y); }
 async function makeCard(fmt){
-  const W=1080, H=fmt==='story'?1920:1350, PH=fmt==='story'?1440:960, CX=fmt==='story'?.36:.4;
+  const story=fmt==='story', wide=fmt==='wide', W=wide?1920:1080, H=wide?1080:story?1920:1350,
+    T=story?250:wide?80:150, B=story?300:wide?80:150, CX=story?.42:wide?.5:.4;            // Stories hide ~250px under the app UI; a square crop of 4:5 trims 135px top and bottom
   try{ await document.fonts.load('600 64px Geist'); await document.fonts.load('400 32px Geist'); }catch(e){}
   const c=document.createElement('canvas'); c.width=W; c.height=H; const g=c.getContext('2d');
   g.fillStyle='#070707'; g.fillRect(0,0,W,H);
-  const ph=document.createElement('canvas'); ph.width=W; ph.height=PH; const pg=ph.getContext('2d');   // the frozen last frame + the blood on screen
-  pg.filter='contrast(1.12)'; coverAt(pg,fv,W,PH,CX); pg.filter='none';
-  if(bc.width) coverAt(pg,bc,W,PH,CX,0);   // blood stays pinned to the top edge
-  g.drawImage(ph,0,0);
-  const fade=g.createLinearGradient(0,PH*.62,0,PH); fade.addColorStop(0,'rgba(7,7,7,0)'); fade.addColorStop(.85,'#070707'); fade.addColorStop(1,'#070707'); g.fillStyle=fade; g.fillRect(0,PH*.62,W,PH*.38+1);
-  g.fillStyle='#e5352b'; g.beginPath(); g.arc(64,72,9,0,Math.PI*2); g.fill();
-  cardText(g,'CHATWAKE · FRONT CAMERA',86,81,'600 26px Geist, system-ui, sans-serif','rgba(255,255,255,.9)');
-  const secs=Math.max(1,Math.round((Date.now()-stats.start)/1000)), d=new Date();
+  g.filter='contrast(1.12)'; coverAt(g,fv,W,H,CX,fv.height>fv.width?.6:.4); g.filter='none';   // phones: lift the face above the text                 // the frozen last frame fills the card
+  if(bc.width) coverAt(g,bc,W,H,CX,0);                                                    // blood stays pinned to the top edge
+  const top=g.createLinearGradient(0,0,0,T+140); top.addColorStop(0,'rgba(0,0,0,.45)'); top.addColorStop(1,'rgba(0,0,0,0)'); g.fillStyle=top; g.fillRect(0,0,W,T+140);
+  const urlY=H-B-30, divY=urlY-58, secs=Math.max(1,Math.round((Date.now()-stats.start)/1000)), d=new Date();
   const lines=[`Survived ${secs>=60?Math.floor(secs/60)+'m ':''}${secs%60}s · Jumped ${stats.jumps} time${stats.jumps===1?'':'s'}`];
   if(stats.name) lines.push(`${stats.name}. She’ll remember that.`);
   else if(stats.first) lines.push(`Last words: “${clip(stats.first,34)}”`);
   else if(!fin.frozen) lines.push('Camera off. She saw you anyway.');
-  let y=PH+(fmt==='story'?110:70);
-  cardText(g,fin.frozen?'She was in every frame.':'She saw you anyway.',72,y,'600 64px Geist, system-ui, sans-serif','#f2f2f2'); y+=66;
-  for(const l of lines){ cardText(g,l,72,y,'400 32px Geist, system-ui, sans-serif','rgba(255,255,255,.62)'); y+=46; }
-  cardText(g,`${timeStr()} · ${d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}`,72,y,'400 28px Geist, system-ui, sans-serif','rgba(229,53,43,.9)');
-  g.fillStyle='rgba(255,255,255,.12)'; g.fillRect(72,H-118,W-144,1);
-  cardText(g,SITE,72,H-64,'500 30px Geist, system-ui, sans-serif','#fff');
-  cardText(g,HANDLE,W-72,H-64,'400 30px Geist, system-ui, sans-serif','rgba(255,255,255,.62)','right');
+  const dateY=divY-36, headY=dateY-46*lines.length-56, fadeTop=headY-(wide?140:230);   // wide: shorter fade so the face stays lit
+  const fade=g.createLinearGradient(0,fadeTop,0,H); fade.addColorStop(0,'rgba(7,7,7,0)'); fade.addColorStop(.35,'rgba(7,7,7,.82)'); fade.addColorStop(1,'rgba(7,7,7,.96)');
+  g.fillStyle=fade; g.fillRect(0,fadeTop,W,H-fadeTop);
+  g.fillStyle='#e5352b'; g.beginPath(); g.arc(80,T+2,9,0,Math.PI*2); g.fill();
+  cardText(g,'CHATWAKE · FRONT CAMERA',102,T+11,'600 26px Geist, system-ui, sans-serif','rgba(255,255,255,.92)');
+  cardText(g,fin.frozen?'She was in every frame.':'She saw you anyway.',72,headY,'600 64px Geist, system-ui, sans-serif','#f2f2f2');
+  let y=headY+56; for(const l of lines){ cardText(g,l,72,y,'400 32px Geist, system-ui, sans-serif','rgba(255,255,255,.7)'); y+=46; }
+  cardText(g,`${timeStr()} · ${d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}`,72,dateY,'400 28px Geist, system-ui, sans-serif','rgba(229,53,43,.95)');
+  g.fillStyle='rgba(255,255,255,.14)'; g.fillRect(72,divY,W-144,1);
+  cardText(g,SITE,72,urlY,'500 30px Geist, system-ui, sans-serif','#fff');
+  cardText(g,HANDLE,W-72,urlY,'400 30px Geist, system-ui, sans-serif','rgba(255,255,255,.7)','right');
   grain(g,W,H,.05);
   return new Promise(r=>c.toBlob(r,'image/png'));
 }
@@ -733,6 +735,8 @@ let mobileShare=false;
 async function openCard(){ const btn=$('#savePic'); btn.disabled=true;
   try{ $('#cvCap').textContent=caption().split('\n')[0];
     mobileShare=isTouch&&canFileShare();                                    // phones hand the photo to the app; laptops prefill or copy
+    const laptop=!isTouch; $('#cardView .fmt [data-fmt=wide]').hidden=!laptop;   // laptops add a landscape size and start on it; phones choose post or story
+    cardFmt=laptop?'wide':'post'; setFmt();
     $('#cvMore').textContent=mobileShare?'More apps':'Download';
     cvNote(mobileShare?'Long-press the photo to save it. Tag @ankitcreatives':'Your photo never leaves your device. Tag @ankitcreatives');
     await renderCard(); $('#cardView').classList.add('on');
@@ -742,8 +746,9 @@ $('#savePic').addEventListener('click',openCard);
 $('#cvClose').addEventListener('click',closeCard);
 $('#cardView').addEventListener('click',e=>{ if(e.target.id==='cardView') closeCard(); });
 addEventListener('keydown',e=>{ if(e.key==='Escape') closeCard(); });
-$$('#cardView .fmt button').forEach(b=>b.addEventListener('click',()=>{ if(b.dataset.fmt===cardFmt)return; cardFmt=b.dataset.fmt;
-  $$('#cardView .fmt button').forEach(x=>{ x.classList.toggle('on',x===b); x.setAttribute('aria-checked',x===b); }); renderCard(); }));
+function setFmt(){ $$('#cardView .fmt button').forEach(x=>{ const on=x.dataset.fmt===cardFmt; x.classList.toggle('on',on); x.setAttribute('aria-checked',on); });
+  $('#cardView .box').classList.toggle('wide',cardFmt==='wide'); }
+$$('#cardView .fmt button').forEach(b=>b.addEventListener('click',()=>{ if(b.dataset.fmt===cardFmt)return; cardFmt=b.dataset.fmt; setFmt(); renderCard(); }));
 /* share sheet with the photo; the caption is copied first because Instagram drops shared text */
 function sheet(after){ copyText(caption()); const f=new File([cardBlob],`chatwake-haunted-${cardFmt}.png`,{type:'image/png'});
   navigator.share({files:[f],text:caption()}).then(()=>cvNote(after)).catch(()=>{}); }
