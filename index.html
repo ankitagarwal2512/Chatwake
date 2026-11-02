@@ -249,14 +249,44 @@ kbd{display:inline-block;min-width:20px;padding:1px 6px;border:1px solid rgba(25
 #static{position:fixed;inset:0;width:100%;height:100%;z-index:90;pointer-events:none;image-rendering:pixelated;opacity:0;mix-blend-mode:multiply}
 #static.hot{mix-blend-mode:screen}
 
-#gate{position:fixed;inset:0;z-index:200;background:rgba(10,10,9,.62);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:grid;place-items:center;padding:20px;transition:opacity .5s}
+#gate{position:fixed;inset:0;z-index:200;display:grid;place-items:center;padding:20px;transition:opacity .5s}
+/* overlay lives on a pseudo so the card's own backdrop-filter can see the app */
+#gate::before{content:"";position:absolute;inset:0;z-index:-1;
+  background:radial-gradient(120% 90% at 50% 45%,rgba(10,10,9,.18) 0%,rgba(10,10,9,.55) 60%,rgba(6,6,5,.85) 100%);
+  backdrop-filter:blur(2.5px) saturate(.85);-webkit-backdrop-filter:blur(2.5px) saturate(.85)}
 #gate.gone{opacity:0;pointer-events:none}
-.modal{background:var(--chip);color:var(--text);border:1px solid var(--border);border-radius:22px;padding:28px 28px 22px;width:min(400px,100%);text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.6)}
-.modal .mark{width:44px;height:44px;border-radius:14px;background:var(--ink);margin:0 auto 14px;display:grid;place-items:center;color:var(--ink-text)}
-.modal h2{margin:0 0 6px;font-size:22px;font-weight:600;letter-spacing:-.01em}
-.modal p{margin:0 0 20px;color:color-mix(in srgb,var(--text) 82%,transparent)}
-.modal button{width:100%;border:0;background:var(--ink);color:var(--ink-text);padding:12px;border-radius:999px;cursor:pointer;font-size:15px;font-weight:500}
-.modal small{display:block;margin-top:14px;color:color-mix(in srgb,var(--text) 68%,transparent);font-size:12px}
+.modal{position:relative;isolation:isolate;overflow:hidden;color:var(--text);border-radius:26px;padding:30px 28px 22px;width:min(400px,100%);text-align:center;
+  background:linear-gradient(155deg,rgba(255,255,255,.10) 0%,rgba(255,255,255,.03) 45%,rgba(255,255,255,0) 100%),rgba(18,18,17,.62);
+  backdrop-filter:blur(30px) saturate(1.4) brightness(.65);-webkit-backdrop-filter:blur(30px) saturate(1.4) brightness(.65);
+  border:1px solid rgba(255,255,255,.14);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.28),inset 0 -1px 0 rgba(255,255,255,.04),inset 0 0 40px rgba(255,255,255,.03),0 30px 80px rgba(0,0,0,.55),0 0 0 .5px rgba(0,0,0,.4);
+  animation:glassIn .9s cubic-bezier(.2,.8,.2,1) both}
+/* light sweeping across the glass */
+.modal::before{content:"";position:absolute;inset:-40% -60%;z-index:-1;pointer-events:none;
+  background:linear-gradient(115deg,transparent 42%,rgba(255,255,255,.07) 48%,rgba(255,255,255,.015) 52%,transparent 58%);
+  animation:sheen 7s ease-in-out 1s infinite}
+/* something red breathing behind it */
+.modal::after{content:"";position:absolute;left:50%;bottom:-120px;width:140%;height:220px;transform:translateX(-50%);z-index:-2;pointer-events:none;
+  background:radial-gradient(closest-side,rgba(229,72,62,.28),rgba(229,72,62,0));filter:blur(8px);
+  animation:ember 5s ease-in-out infinite}
+/* a palm pressed against the other side */
+.modal .press{position:absolute;right:-18px;top:-26px;width:120px;height:180px;z-index:-1;pointer-events:none;color:#e5483e;
+  opacity:0;filter:blur(5px);transform:rotate(18deg) scale(.96);animation:press 9s ease-in-out 2.4s infinite}
+.modal .mark{width:46px;height:46px;border-radius:15px;margin:0 auto 16px;display:grid;place-items:center;color:#fff;
+  background:linear-gradient(160deg,rgba(255,255,255,.22),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.18);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 6px 20px rgba(229,72,62,.25)}
+.modal .mark svg{filter:drop-shadow(0 0 6px rgba(229,72,62,.7))}
+.modal .mark svg path{fill:rgba(229,72,62,.85);stroke:#ff8a80}
+.modal h2{margin:0 0 6px;font-size:23px;font-weight:600;letter-spacing:-.015em;color:#fff}
+.modal p{margin:0 0 22px;color:rgba(255,255,255,.88)}
+.modal button{width:100%;border:0;background:rgba(255,255,255,.94);color:#141413;padding:12.5px;border-radius:999px;cursor:pointer;font-size:15px;font-weight:500;
+  box-shadow:inset 0 -1px 0 rgba(0,0,0,.08),0 8px 24px rgba(0,0,0,.35);transition:transform .2s,box-shadow .2s,background .2s}
+.modal button:hover{background:#fff;transform:translateY(-1px);box-shadow:0 0 0 4px rgba(255,255,255,.08),0 12px 30px rgba(0,0,0,.4)}
+.modal small{display:block;margin:16px -14px 0;text-wrap:balance;line-height:1.5;color:rgba(255,255,255,.7);font-size:12px}
+@keyframes glassIn{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes sheen{0%,100%{transform:translateX(-35%)}50%{transform:translateX(35%)}}
+@keyframes ember{0%,100%{opacity:.55}50%{opacity:1}}
+@keyframes press{0%,100%{opacity:0;transform:rotate(18deg) scale(.96)}12%{opacity:.22;transform:rotate(18deg) scale(1)}30%{opacity:.14}55%{opacity:0}}
 #snd{position:fixed;left:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:72;border:1px solid var(--border);background:var(--chip);color:var(--muted);border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer}
 
 @media (max-width:800px){
@@ -267,6 +297,7 @@ kbd{display:inline-block;min-width:20px;padding:1px 6px;border:1px solid rgba(25
 @media (prefers-reduced-motion:reduce){
   .app.glitch,.app.shake,.item.possessed,.profile.possessed{animation:none}
   #scare canvas{animation-duration:2s}
+  .modal,.modal::before,.modal::after,.modal .press{animation:none}
 }
 </style>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-RLBGRQJLNS"></script>
@@ -395,11 +426,12 @@ kbd{display:inline-block;min-width:20px;padding:1px 6px;border:1px solid rgba(25
 
 <div id="gate">
   <div class="modal" role="dialog" aria-labelledby="gt">
+    <svg class="press" aria-hidden="true"><use href="#hand"/></svg>
     <div class="mark"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3c-3 4-5 6-5 10a5 5 0 0 0 10 0c0-4-2-6-5-10Z"/></svg></div>
     <h2 id="gt">Welcome back</h2>
     <p>Still up? Turn your sound on. ChatWake talks back tonight.</p>
     <button id="enter">Continue</button>
-    <small>Contains jump scares, flashing light and loud sound. Headphones recommended.</small>
+    <small>Jump scares and flashing light ahead.<br>Your photo is never uploaded. No one sees you, not even me.</small>
   </div>
 </div>
 
