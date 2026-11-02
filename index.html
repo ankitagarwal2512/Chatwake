@@ -791,6 +791,8 @@ const SITE='chatwake.ankitcreatives.com', HANDLE='@ankitcreatives';
 let cardFmt='post';
 function coverAt(g,src,dw,dh,cx,cy=.5){ const sw=src.width, sh=src.height, sc=Math.max(dw/sw,dh/sh), vw=dw/sc, vh=dh/sc;   // crop aimed at cx (0–1) so the figure stays in
   g.drawImage(src,Math.max(0,Math.min(sw-vw,cx*sw-vw/2)),(sh-vh)*cy,vw,vh,0,0,dw,dh); }
+function igIcon(g,x,y,s,color){ const k=s/24; g.save(); g.translate(x,y); g.scale(k,k); g.strokeStyle=color; g.fillStyle=color; g.lineWidth=2;   // same glyph as the finale credit
+  g.beginPath(); g.roundRect(3,3,18,18,5); g.stroke(); g.beginPath(); g.arc(12,12,4,0,Math.PI*2); g.stroke(); g.beginPath(); g.arc(17.5,6.5,1.1,0,Math.PI*2); g.fill(); g.restore(); }
 function cardText(g,t,x,y,font,color,align='left'){ g.font=font; g.fillStyle=color; g.textAlign=align; g.fillText(t,x,y); }
 async function makeCard(fmt){
   const story=fmt==='story', wide=fmt==='wide', W=wide?1920:1080, H=wide?1080:story?1920:1350,
@@ -814,7 +816,8 @@ async function makeCard(fmt){
   cardText(g,`${timeStr()} · ${d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}`,72,dateY,'400 28px Geist, system-ui, sans-serif','rgba(229,53,43,.95)');
   g.fillStyle='rgba(255,255,255,.14)'; g.fillRect(72,divY,W-144,1);
   cardText(g,SITE,72,urlY,'500 30px Geist, system-ui, sans-serif','#fff');
-  cardText(g,HANDLE,W-72,urlY,'400 30px Geist, system-ui, sans-serif','rgba(255,255,255,.7)','right');
+  cardText(g,HANDLE.slice(1),W-72,urlY,'400 30px Geist, system-ui, sans-serif','rgba(255,255,255,.7)','right');
+  igIcon(g,W-72-g.measureText(HANDLE.slice(1)).width-14-28,urlY-24,28,'rgba(255,255,255,.7)');
   grain(g,W,H,.05);
   return new Promise(r=>c.toBlob(r,'image/png'));
 }
