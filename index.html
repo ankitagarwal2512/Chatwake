@@ -132,6 +132,10 @@ h1.glitch{color:var(--dread);text-shadow:2px 0 rgba(255,0,0,.45),-2px 0 rgba(0,1
 .composer.possessed input{color:#e5483e}
 #typingHint{position:absolute;left:22px;top:-26px;font-size:13px;color:var(--muted);opacity:0;transition:opacity .2s}
 #typingHint.on{opacity:1}
+#ghostLine{position:absolute;left:50px;right:88px;top:50%;transform:translateY(-50%);z-index:3;color:#e5483e;font-size:14px;line-height:1.25;opacity:0;transition:opacity .2s;pointer-events:none}
+.composer.ghosting{background:#140505!important;border-color:#5a0b0b!important}
+.composer.ghosting input{color:transparent!important;caret-color:transparent}   /* their words are hidden, not erased */
+.composer.ghosting #ghostLine{opacity:1}
 .model{border:0;background:transparent;color:var(--muted);cursor:pointer;padding:6px 8px;border-radius:10px;display:flex;align-items:center;gap:4px}
 .model:hover{background:var(--hover)}
 .send{width:38px;height:38px;border-radius:50%;border:0;background:var(--ink);color:var(--ink-text);display:grid;place-items:center;cursor:pointer;position:relative;overflow:hidden}
@@ -293,6 +297,16 @@ kbd{display:inline-block;min-width:20px;padding:1px 6px;border:1px solid rgba(25
   .app{grid-template-columns:1fr} aside{display:none} h1{font-size:24px}
   header{grid-template-columns:auto 1fr} header>span{display:none}
   .model{display:none}
+  .hero{justify-content:flex-end;padding:0 12px calc(12px + env(safe-area-inset-bottom,0px))}
+  .hero h1{margin:auto 0;text-align:center}
+  .chips{order:1;flex-direction:row;overflow-x:auto;gap:8px;width:100%;margin:0 0 28px;padding:2px;scrollbar-width:none;scroll-snap-type:x mandatory}
+  .chip{scroll-snap-align:start}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{flex:0 0 228px;align-items:flex-start;gap:10px;padding:11px 12px;border:1px solid var(--border);background:var(--chip);border-radius:16px;font-size:13.5px;line-height:1.35}
+  .chip>span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .chip .ico{width:16px;height:16px;margin-top:1px}
+  .composer{order:2}
+  main.chatting .hero{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
 }
 @media (prefers-reduced-motion:reduce){
   .app.glitch,.app.shake,.item.possessed,.profile.possessed{animation:none}
@@ -378,7 +392,7 @@ kbd{display:inline-block;min-width:20px;padding:1px 6px;border:1px solid rgba(25
     <div class="hero">
       <h1 id="headline">What are we designing tonight?</h1>
       <div class="composer" id="composer">
-        <span id="typingHint">Guest is typing…</span>
+        <span id="typingHint">Guest is typing…</span><span id="ghostLine" aria-hidden="true"></span>
         <button class="icon-btn" id="plus" aria-label="Add"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button>
         <input id="input" placeholder="Ask anything" autocomplete="off" aria-label="Message">
         <button class="model haunt"><span data-dread="Awake">Smart</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
@@ -462,7 +476,7 @@ addEventListener('pointermove',e=>{ if(!entered||hoverMoved>=60)return; if(lastP
 const hoverArmed=()=>Date.now()>=hoverArmAt&&hoverMoved>=60;
 let px=innerWidth/2, py=innerHeight/2, lastMove=Date.now(), lastScare=Date.now();
 let hoverCount=0; const tally={};
-function dread(){ const s=(Date.now()-t0)/1000; let d=hoverCount<3?0:hoverCount<8?1:hoverCount<15?2:3; if(s>45)d=Math.max(d,1); if(s>100)d=Math.max(d,2); return d; }
+function dread(){ const s=(Date.now()-t0)/1000; let d=hoverCount<3?0:hoverCount<8?1:hoverCount<15?2:3; if(s>(isTouch?15:45))d=Math.max(d,1); if(s>(isTouch?60:100))d=Math.max(d,2); return d; }   // phones can't hover, so time builds the dread
 function timeStr(){ return new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}); }
 function device(){ const u=navigator.userAgent; return /iPhone/.test(u)?'iPhone':/iPad/.test(u)?'iPad':/Android/.test(u)?'phone':/Mac/.test(u)?'Mac':/Windows/.test(u)?'laptop':'computer'; }
 
@@ -1217,7 +1231,12 @@ async function possessInput(){
   ty.ghost=ty.prev=input.value; ty.delFrom=null; ty.last=Date.now();   // the ghost's line is its own, not something they wrote
   whisper(.5); await wait(800); composer.classList.remove('possessed'); input.readOnly=false; input.focus();
 }
-input.addEventListener('input',e=>{ trackTyping(e); lastMove=Date.now(); if(!tookOver&&!chatBusy&&input.value.length>=8){ tookOver=true; possessInput(); } });
+async function possessMobile(){
+  const g=$('#ghostLine'); g.textContent=''; composer.classList.add('ghosting'); whisper(.6); thump(.5); shakePhone(40);
+  for(const c of `it’s ${timeStr().toLowerCase()}. ${NIGHT?'why are you still awake?':'why is it so dark in here?'}`){ g.textContent+=c; keyClick(); await wait(45+Math.random()*60); }
+  await wait(1400); composer.classList.remove('ghosting'); whisper(.4);
+}
+input.addEventListener('input',e=>{ trackTyping(e); lastMove=Date.now(); if(!tookOver&&!chatBusy&&input.value.length>=8){ tookOver=true; isTouch?possessMobile():possessInput(); } });
 input.addEventListener('keydown',e=>{ if(!input.readOnly) keyClick(); if(e.key==='Enter'){ e.preventDefault(); send(); } });
 sendBtn.addEventListener('click',send);
 $$('.chip').forEach(c=>c.addEventListener('click',()=>{ if(chatBusy)return; input.value=c.querySelector('[data-dread]').dataset.calm; send(); }));
@@ -1242,7 +1261,7 @@ addEventListener('keydown',e=>{
 /* ================= director ================= */
 setInterval(()=>{ if(!entered||document.hidden)return; const sec=(Date.now()-t0)/1000;
   if(toastIdx<toastsQ.length&&sec>=toastsQ[toastIdx].at&&!busy) nextToast();
-  if(!busy&&!chatBusy&&dread()>=1&&Date.now()-lastMove>9000&&Date.now()-lastScare>15000) lightsOut(); },500);
+  if(!busy&&!chatBusy&&dread()>=1&&Date.now()-lastMove>(isTouch?6000:9000)&&Date.now()-lastScare>15000) lightsOut(); },500);
 function ambient(){ setTimeout(ambient,8000+Math.random()*7000); if(!entered||busy||chatBusy||document.hidden)return;
   const r=Math.random(), d=dread();
   if(r<.4) flickerHeadline(); else if(r<.55) glitch(); else if(r<.85){ const it=$$('aside .haunt'), h=it[Math.random()*it.length|0];
