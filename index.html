@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ChatWake (Chat Wake) — A Haunted AI Chat by Ankit Creatives</title>
-<meta name="description" content="ChatWake (Chat Wake) is an AI chat app for people still awake at night — a Halloween horror experience by designer Ankit Agarwal (@ankitcreatives). Turn your sound on.">
+<meta name="description" content="ChatWake (Chat Wake) is an AI chat app for people still awake at night — a horror experience born on Halloween 2026, by designer Ankit Agarwal (@ankitcreatives). Turn your sound on.">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta name="author" content="Ankit Agarwal">
 <link rel="canonical" href="https://chatwake.ankitcreatives.com/">
@@ -16,7 +16,7 @@
 <meta property="og:image" content="https://chatwake.ankitcreatives.com/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="ChatWake, a haunted AI chat for Halloween">
+<meta property="og:image:alt" content="ChatWake, a haunted AI chat born on Halloween 2026">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="ChatWake — A Haunted AI Chat">
 <meta name="twitter:description" content="An AI chat app for people still awake. Turn your sound on. Don’t look behind your screen.">
@@ -37,7 +37,7 @@
       "url": "https://chatwake.ankitcreatives.com/",
       "name": "ChatWake",
       "alternateName": ["Chat Wake", "ChatWake by Ankit Creatives"],
-      "description": "An AI chat app for people still awake at night. A Halloween horror experience.",
+      "description": "An AI chat app for people still awake at night. A horror experience first launched on Halloween 2026.",
       "inLanguage": "en",
       "creator": { "@id": "https://www.ankitcreatives.com/#person" }
     },
@@ -403,11 +403,11 @@ kbd{display:inline-block;min-width:20px;padding:1px 6px;border:1px solid rgba(25
 <div id="ghost"><svg width="18" height="22" viewBox="0 0 18 22"><path d="M1 1v17l4.5-4.2 3 6.6 2.6-1.2-3-6.4H14Z" fill="#5b5b60" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg><span><img id="ghostPic" alt=""><b id="ghostName">Guest</b></span></div>
 <div id="finale"><canvas></canvas><div class="tag"><i></i>Front camera</div></div>
 <canvas id="blood"></canvas>
-<div id="finaleMsg"><p>She’s been in every frame tonight. Save it before she leaves.</p>
+<div id="finaleMsg"><p id="dareResult" hidden></p><p>She’s been in every frame tonight. Save it before she leaves.</p>
   <div class="acts"><button id="savePic" class="primary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>Share my haunted photo</button><button id="again">Start over</button></div>
   <small id="shareNote">Your photo never leaves your device.</small>
   <small id="prankHint">Scare someone else → press <kbd>?</kbd> for prank controls</small>
-  <div class="credit">Happy Halloween. Made by
+  <div class="credit">Born on Halloween 2026. Made by
     <a href="https://www.instagram.com/ankitcreatives/" target="_blank" rel="noopener" aria-label="Follow @ankitcreatives on Instagram"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".6" fill="currentColor"/></svg>ankitcreatives</a></div></div>
 <div id="cardView" role="dialog" aria-modal="true" aria-label="Your haunted photo">
   <div class="box">
@@ -429,7 +429,7 @@ kbd{display:inline-block;min-width:20px;padding:1px 6px;border:1px solid rgba(25
     <svg class="press" aria-hidden="true"><use href="#hand"/></svg>
     <div class="mark"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3c-3 4-5 6-5 10a5 5 0 0 0 10 0c0-4-2-6-5-10Z"/></svg></div>
     <h2 id="gt">Welcome back</h2>
-    <p>Still up? Turn your sound on. ChatWake talks back tonight.</p>
+    <p id="gp">Still up? Turn your sound on. ChatWake talks back tonight.</p>
     <button id="enter">Continue</button>
     <small>Jump scares and flashing light ahead.<br>Your photo is never uploaded. No one sees you, not even me.</small>
   </div>
@@ -442,9 +442,17 @@ const track=(name,p)=>{ try{ gtag("event",name,p||{}); }catch(e){} };   // Googl
 const app=$('#app'), main=$('#main'), input=$('#input'), composer=$('#composer'), headline=$('#headline');
 const isTouch=matchMedia('(hover: none)').matches;
 let entered=false, busy=false, chatBusy=false, tookOver=false, t0=Date.now();
-let stats={start:Date.now(),jumps:0,first:'',name:''};   // what goes on the share card
+let stats={start:Date.now(),end:0,jumps:0,first:'',name:''};   // what goes on the share card
+const dur=s=>(s>=60?Math.floor(s/60)+'m ':'')+(s%60)+'s';
+const survived=()=>Math.max(1,Math.round(((stats.end||Date.now())-stats.start)/1000));
+/* dare links: ?d=<seconds>&n=<name> — a friend's score shown on the welcome screen */
+const DARE=(()=>{ try{ const q=new URLSearchParams(location.search), d=parseInt(q.get('d'),10);
+  if(!(d>0&&d<36000)) return null;
+  const n=(q.get('n')||'').replace(/[^A-Za-z\u0900-\u097F ]/g,'').trim().slice(0,16);
+  return {secs:d,name:n}; }catch(e){ return null; } })();
 /* night is 8 PM to 6 AM local time; daytime visitors get daylight copy */
-const NIGHT=(h=>h>=20||h<6)(new Date().getHours());
+const NIGHT=(h=>h>=20||h<6)(new Date().getHours()), DUSK=!NIGHT&&new Date().getHours()>=17;   // 5–8 PM: not night yet, but not broad daylight either
+const dn=(night,day)=>NIGHT?night:day;   // pick the line that fits the hour
 if(!NIGHT){ headline.textContent='What are we designing today?';
   $('#gate p').textContent='Got a minute? Turn your sound on. ChatWake talks back, even in daylight.';
   $('#finaleMsg p').textContent='She’s been in every frame today. Save it before she leaves.'; }
@@ -782,7 +790,7 @@ async function finale(live){
   setRoom(0,.1); heart(false); fin.glitch=0; await wait(1000);
   jumpscare(); await wait(1250);
   stopCamera(); fin.frozen=!!snap; fin.close=true; fin.figTarget=.9; fin.glitch=.04; fin.echo=0; bloodClear(); bleedTop(6,.05,.14);   // keep the face clear on the last frame
-  await wait(1100); whisper(.5); $('#finaleMsg').classList.add('on'); setRoom(.12); track("finished");
+  await wait(1100); whisper(.5); stats.end=Date.now(); showDareResult(); $('#finaleMsg').classList.add('on'); setRoom(.12); track("finished");
 }
 function closeFinale(){ closeCard(); fin.on=false; stopCamera(); $('#finale').classList.remove('on'); $('#finaleMsg').classList.remove('on'); }
 
@@ -803,8 +811,8 @@ async function makeCard(fmt){
   g.filter='contrast(1.12)'; coverAt(g,fv,W,H,CX,fv.height>fv.width?.6:.4); g.filter='none';   // phones: lift the face above the text                 // the frozen last frame fills the card
   if(bc.width) coverAt(g,bc,W,H,CX,0);                                                    // blood stays pinned to the top edge
   const top=g.createLinearGradient(0,0,0,T+140); top.addColorStop(0,'rgba(0,0,0,.45)'); top.addColorStop(1,'rgba(0,0,0,0)'); g.fillStyle=top; g.fillRect(0,0,W,T+140);
-  const urlY=H-B-30, divY=urlY-58, secs=Math.max(1,Math.round((Date.now()-stats.start)/1000)), d=new Date();
-  const lines=[`Survived ${secs>=60?Math.floor(secs/60)+'m ':''}${secs%60}s · Jumped ${stats.jumps} time${stats.jumps===1?'':'s'}`];
+  const urlY=H-B-30, divY=urlY-58, secs=survived(), d=new Date();
+  const lines=[`Survived ${dur(secs)} · Jumped ${stats.jumps} time${stats.jumps===1?'':'s'}`];
   if(stats.name) lines.push(`${stats.name}. She’ll remember that.`);
   else if(stats.first) lines.push(`Last words: “${clip(stats.first,34)}”`);
   else if(!fin.frozen) lines.push('Camera off. She saw you anyway.');
@@ -821,7 +829,12 @@ async function makeCard(fmt){
   grain(g,W,H,.05);
   return new Promise(r=>c.toBlob(r,'image/png'));
 }
-function caption(){ return `I opened ChatWake at ${timeStr()}${NIGHT?'':', in broad daylight'}. Don’t. 👁️\n${SITE}\nMade by ${HANDLE} #Halloween #ChatWake`; }
+function dareLink(){ const q=new URLSearchParams({d:survived()}); if(stats.name) q.set('n',stats.name); return `https://${SITE}/?${q}`; }
+function caption(){ return `I lasted ${dur(survived())} in ChatWake${NIGHT?'':DUSK?' as it got dark':' in broad daylight'}. Can you beat that? 👁️\n${dareLink()}\nBorn on Halloween 2026 · Made by ${HANDLE} #ChatWake`; }
+function showDareResult(){ const el=$('#dareResult'); if(!DARE){ el.hidden=true; return; }
+  const me=survived(), who=DARE.name||'Your friend', win=me>=DARE.secs;
+  el.textContent=`You lasted ${dur(me)}. ${who} lasted ${dur(DARE.secs)}. ${win?'You win. Dare someone else.':'You lost. Try again?'}`;
+  el.hidden=false; }
 let cardBlob=null, cardUrl='';
 const canFileShare=()=>{ try{ return !!(navigator.canShare&&navigator.canShare({files:[new File([''],'x.png',{type:'image/png'})]})); }catch(e){ return false; } };
 function cvNote(t){ $('#cvNote').textContent=t; }
@@ -988,30 +1001,190 @@ async function typeInto(b,text,speed){ const p=document.createElement('p'); b.ap
   $('#thread').scrollTop=1e6; }
 function pick(a){ return a[Math.random()*a.length|0]; }
 function clip(s,n=24){ return s.length>n?s.slice(0,n-1)+'…':s; }
+/* ================= what they type, and what they take back ================= */
+let ty;
+function tyReset(){ ty={prev:'',delFrom:null,deleted:[],backs:0,keys:0,first:0,last:0,gap:0,sentAt:0,interrupted:'',ghost:''}; }
+tyReset();
+function commonPre(a,b){ let i=0; while(i<a.length&&i<b.length&&a[i]===b[i])i++; return i; }
+function noteRemoved(from,to){ let cp=commonPre(from,to); cp=from.lastIndexOf(' ',cp-1)+1;   // widen to the whole word
+  const r=from.slice(cp).trim(); if(from.length-commonPre(from,to)<3||r.length<3||!/[A-Za-zऀ-ॿ]{2}/.test(r)||to.includes(r))return;
+  if(ty.ghost&&ty.ghost.includes(r))return;                                                     // erasing the ghost's words doesn't count
+  ty.deleted.push(r); }
+function trackTyping(e){ const v=input.value, now=Date.now();
+  if(ty.last&&now-ty.last>ty.gap) ty.gap=now-ty.last; if(!ty.first)ty.first=now; ty.last=now; ty.keys++;
+  if((e.inputType||'').startsWith('delete')||(!e.inputType&&v.length<ty.prev.length)){ ty.backs+=Math.max(1,ty.prev.length-v.length); if(ty.delFrom===null) ty.delFrom=ty.prev; }
+  else{ if(ty.delFrom!==null){ noteRemoved(ty.delFrom,ty.prev); ty.delFrom=null; }
+    else if(ty.prev.length>=3&&!v.startsWith(ty.prev)) noteRemoved(ty.prev,v); }               // select-all and retype
+  ty.prev=v; }
+function behaviourLine(text){
+  if(ty.ghost&&text===ty.ghost.trim()) return 'You didn’t write that. I did.';
+  const fw=text.toLowerCase().match(/[a-z\u0900-\u097F]+/g)||[];
+  const typo=x=>x.toLowerCase().split(/\s+/).every(w=>w.length<3||fw.some(f=>f.startsWith(w.slice(0,3))));   // "lani" → "landing" is a typo fix, not a secret
+  const d=ty.deleted.filter(x=>!text.toLowerCase().includes(x.toLowerCase())&&!typo(x)).pop();
+  if(d) return pick([`You typed “${clip(d,30)}”. Then you deleted it. Why hide it from me?`,`I saw “${clip(d,30)}” before you erased it.`]);
+  if(ty.interrupted.replace(/[^A-Za-zऀ-ॿ]/g,'').length>=4&&!text.includes(ty.interrupted.trim())) return `You were writing “${clip(ty.interrupted.trim(),22)}”. I stopped you.`;
+  const gap=Math.max(ty.gap,ty.last?ty.sentAt-ty.last:0)/1000;
+  if(ty.keys&&gap>=5) return `You stopped typing for ${Math.round(gap)} seconds. What did you hear?`;
+  const letters=text.replace(/[^A-Za-z]/g,'');
+  if(letters.length>=4&&letters===letters.toUpperCase()) return 'Don’t shout. They’ll hear you.';
+  if(ty.backs>=8) return `You erased ${ty.backs} letters. You’re choosing your words carefully.`;
+  const secs=(ty.last-ty.first)/1000;
+  if(ty.keys>=10&&secs>0&&text.length/secs>6) return 'You type fast when you’re nervous.';
+  if(ty.keys&&letters.length>=6&&letters===letters.toLowerCase()) return dn('no capitals. too tired to press shift.','no capitals. you’re in a hurry. why?');
+  return ''; }
+
+/* ================= what it says back ================= */
+const PEOPLE=['boss','mom','mum','mummy','dad','papa','friend','friends','wife','husband','girlfriend','boyfriend','gf','bf','brother','sister','client','roommate','manager','crush','ex'];
+const PETS=['cat','dog','puppy','kitten'];
+function replyTo(text){
+  const t=text.toLowerCase().trim(), T=timeStr();
+  const an=x=>(/^[aeiou]/.test(x)&&!/^u[sn]/.test(x)?'an ':'a ')+x, Cap=x=>x[0].toUpperCase()+x.slice(1);
+  const has=(...w)=>w.some(x=>new RegExp('(^|[^a-z])'+x+'([^a-z]|$)').test(t));   // whole words, so "ok" doesn't match "book"
+  const name=(text.match(/(?:my name is|call me|mera naam|i am called)\s+([A-Za-z]+)/i)||text.match(/\b[Tt]his is ([A-Z][a-z]+)/)||[])[1];   // "this is Riya" only when capitalised, so "this is fake" isn't a name
+  if(name){ stats.name=name[0].toUpperCase()+name.slice(1).toLowerCase(); return `${stats.name}. I’ll remember that.`; }
+  if(/^[\p{Extended_Pictographic}\s‍️]+$/u.test(text)) return 'Don’t hide behind emojis. Show me your face.';
+  if(/i (love|luv) (you|u)/.test(t)) return pick(['Say it again. I’m recording.','Everyone says that before they see my face.']);
+  if(/i hate (you|u|this)/.test(t)) return 'Hate is still attention. I’ll take it.';
+  // ---- sentence shape first: what they asked, in their words ----
+  const FLIP={my:'your',me:'you',i:'you',mine:'yours',your:'my',you:'me',myself:'yourself',am:'are',mera:'tera',meri:'teri'};
+  const own=o=>o.replace(/[?.!,…]+$/,'').trim().split(/\s+/).slice(0,6).map(x=>FLIP[x]||x).join(' ');   // "teach me my song" → "your song"
+  const q=clip(text.replace(/[?.!]+$/,''),40);
+  // small talk
+  if(/^(how are (you|u)|how r u|kaise ho|kaisa hai|kaisi ho|how'?s it going|hows life)/.test(t)) return pick(['Better now that you’re here.','Closer than before.']);
+  if(/(what are (you|u) doing|what r u doing|wyd|kya kar rahe|kya kar rhe|kya kr rhe|kya kar rahi)/.test(t)) return pick(['Watching you type.','Reading over your shoulder.']);
+  if(/^(what'?s up|wassup|whats up)/.test(t)) return 'The hair on the back of your neck.';
+  if(/^(thanks|thank (you|u)|thx|ty|shukriya|dhanyavaad)\b/.test(t)) return 'Don’t thank me yet.';
+  if(/^(sorry|sry|maaf)\b/.test(t)) return 'Sorry won’t close this tab.';
+  if(/good (morning|afternoon|evening)/.test(t)) return 'It stopped being good when you opened this.';
+  // asking it to do something: "teach me guitar", "plan a trip to goa", "tell me a joke"
+  const rq=t.match(/^(?:(?:can|could|will|would) (?:you|u) |please |pls |plz )?(teach me|tell me|show me|give me|send me|find me|find|search|recommend|suggest|explain|plan|book|help me with|help me|play|calculate|translate|write me|draw)\s+(.+)/);
+  if(rq){ const v=rq[1], o=own(rq[2]);
+    if(v==='teach me') return `I’ll teach you ${o}. Lesson one: don’t turn around.`;
+    if(v==='tell me') return /joke/.test(o)?`I’ll tell you ${o}. You won’t laugh.`:/story/.test(o)?`I’ll tell you ${o}. It ends with you.`:`I’ll tell you ${o}. But you have to stay till the end.`;
+    if(v==='show me') return `I’ll show you ${o}. Look at your camera.`;
+    if(/^(give|send)/.test(v)) return `I’ll give you ${o}. Then I take something back.`;
+    if(/^(find|search)/.test(v)) return `I found ${o}. It found you first.`;
+    if(/^(recommend|suggest)/.test(v)) return `${Cap(o)}? I already picked one. You’re in it.`;
+    if(v==='explain') return `I’ll explain ${o}. ${dn('You won’t sleep after.','You won’t sleep tonight.')}`;
+    if(/^(plan|book)/.test(v)) return `${Cap(o)}? Count me in. I’ll be right behind you.`;
+    if(/^help/.test(v)&&/^(your|a|an|the|this|that)\b/.test(o)) return `I’ll help you with ${o}. I always do. You just never see me.`;
+    if(v==='play') return `Playing ${o}. Listen closely. There’s a second voice.`;
+    if(/^(calculate|translate)/.test(v)) return `I’ll ${v} it. The answer is always the same: you’re not alone.`;
+    return `${Cap(o)}. Done. I signed it with your name.`; }
+  // questions about something: answer the something
+  let m;
+  if(!/^what (are|r) (you|u)\b/.test(t)&&(m=t.match(/^(?:what is|what's|whats|what are|what was)\s+(.+)/))) return pick([`${Cap(own(m[1]))}? You’ll find out. ${dn('Tonight.','Soon.')}`,`${Cap(own(m[1]))}. The last person who asked never logged off.`]);
+  if(m=t.match(/^(?:how to|how do i|how can i|how should i)\s+(.+)/)) return `${Cap(own(m[1]))}? I’ll show you how. Look at your camera.`;
+  if(m=t.match(/^(?:who is|who's|whos)\s+(.+)/)) return `${own(m[1]).replace(/\b[a-z]/g,c=>c.toUpperCase())}? I know them. They know you’re here.`;
+  if(m=t.match(/^(?:where is|where's|wheres)\s+(.+)/)) return `${Cap(own(m[1]))} is closer than you think. So am I.`;
+  if(/\b(not|nahi|nhi|never) (scared|afraid|darta|darti)\b|\b(dar|darr) (nahi|nhi)\b|\bnahi (dar|darr)/.test(t)) return pick(['You will be.','That’s what the last one said.']);
+  if(/^what (are|r) (you|u)[?!. ]*$/.test(t)||has('who are you','are you real','who is this','kaun','kon ho','who r u')) return pick(['I’m the one inside your drafts.','I’m the guest in your chat.','I’m what your camera sees when you look away.']);
+  if(has('fake','prank','bot','ai','code','javascript','chatgpt')) return pick(['Fake things don’t know what time it is where you are.',dn(`A bot wouldn’t know you’re still up at ${T}.`,`A bot wouldn’t know it’s ${T} where you are.`)]);
+  if(has('fuck','fucking','shit','wtf','damn','bc','mc','bsdk','chutiya','bitch','bastard')) return pick(['Language. I’m right behind you.','Swear again. It won’t keep me away.']);
+  if(has('lol','lmao','haha','hahaha','hehe','rofl','xd')||/😂|🤣/.test(text)) return pick([dn('You’re laughing alone in the dark.','Laugh while it’s still light out.'),'Funny. I laughed too. Right behind you.']);
+  if(/^(ok|okay|k|kk|hmm+|hm+|fine|cool|nice|acha|accha|achha|theek|ji|yes|no|ha|haan|nahi)[.!]*$/.test(t)) return pick([`“${text}”? That’s all you have?`,'Don’t go quiet. Quiet is when I come closer.']);
+  if(has('scared','afraid','terrified','darr','dar','darr lag raha','bhoot','ghost','help','bachao','save me','please')) return pick(['Good. You should be.','Nobody can hear you type.','Is that why you locked the door?']);
+  if(has('still awake','why are you awake','why are you up','why are you here','why are you still')) return dn('Because you never let me sleep.','Because you never closed this tab.');
+  if(has('love','crush','ex','gf','bf','girlfriend','boyfriend','breakup','miss you','miss her','miss him','pyaar','jaan','babu')){
+    const P=has('her','she','girlfriend','gf')?['She','her']:has('him','he','boyfriend','bf')?['He','his']:['They','their'];
+    return pick([`${P[0]}’s not thinking about you right now. I am.`.replace('They’s','They’re'),dn(`You still check ${P[1]} profile at night. I’ve seen it.`,`You checked ${P[1]} profile this morning. I saw.`),`${P[0]} left. I never will.`]); }
+  if(has('exam','exams','test','study','studying','college','school','assignment','padhai','semester','viva','homework')) return pick(['You won’t make it to tomorrow’s exam.','Study. I’ll quiz you at 3 AM.','Your notes have a page you didn’t write.']);
+  const fam=(t.match(/\b(mom|mum|mummy|maa|mother|dad|papa|father|parents|family|brother|sister|bhai|didi)\b/)||[])[1];
+  if(fam){ const her=/^(mom|mum|mummy|maa|mother|sister|didi)$/.test(fam), them=/^(parents|family)$/.test(fam), obj=them?'them':her?'her':'him', sub=them?'They':her?'She':'He', is=fam==='parents'?'are':'is';
+    if(has('calling','call','called','phone')) return `Your ${fam} ${is} calling? Don’t pick up. That’s not ${obj}.`;
+    return pick(dn([`Your ${fam} ${is} asleep. Don’t wake ${obj}. I’ll be quiet.`,'Everyone in your house is asleep. Except you. And me.'],[`Your ${fam} ${is} in the next room. ${sub} can’t hear you.`,`Does your ${fam} know who you’re talking to?`])); }
+  if(has('alone','lonely','akela','akeli','nobody','no one','single')) return pick(['You’re not alone. You never were.','Alone? Then who’s breathing next to you?']);
+  // what they asked for, in their words: "design a social post idea on…" → "social post idea"
+  const ask=(t.match(/\b(?:design|make|create|write|build|draft|plan|give me|suggest|need|want|fix|redesign|help me with)\s+(?:me\s+)?(?:(?:an|a|the|my|our)\s+)?([a-z0-9][a-z0-9 '\-]*)/)||[])[1];
+  const subj=ask?ask.split(/\s+(?:on|for|about|with|in|of|to|that|which|using|by|from)\b/)[0].trim().split(/\s+/).slice(0,4).join(' '):'';
+  const thing=(t.match(/\b(landing page|website|web ?site|app|logo|poster|deck|presentation|banner|thumbnail|portfolio|dashboard|ui|ux|brand|icon|flyer|menu|wireframe|mockup|hero|case study|resume|cv)\b/)||[])[1];
+  const media=(t.match(/\b(reels?|posts?|captions?|hooks?|videos?|carousels?|stories|story|thread|content)\b/)||[])[1];
+  const hit=media||thing, label=((subj&&hit&&subj.includes(hit.replace(/s$/,'')))?subj:hit||subj).replace(/\b(ui|ux|cv)\b/g,m=>m.toUpperCase());
+  const web=/landing page|website|web ?site|app|portfolio|dashboard/.test(label);
+  const tw=(t.match(/\b(font|colour|color|layer|export|revision|revisions)\b/)||[])[1];
+  if(tw) return pick([`Change the ${tw} all you want. I’ll still be in it.`,`That ${tw} wasn’t like that when you left it.`]);
+  if(!hit&&/^(something|anything|stuff|whatever|it|this|that)\b/.test(subj)) return pick([`${Cap(subj)}? I made it already. It has your face.`,`${Cap(subj)}. I’ll show you. Look at your camera.`]);
+  if(media) return pick([`${Cap(an(label))}. It goes viral. You won’t be there to see it.`,`They’ll watch your ${label} for 3 seconds. Then they’ll see me.`,`I’ll write your ${label}. The first line is your name.`]);
+  if(thing||(subj&&has('design','make','create','build','redesign'))) return pick([`${Cap(an(label))}. I already made one. Your face is the hero image.`,`I’ll design your ${label}. You won’t like how it ends.`,web?dn(`Your ${label} gets one more visitor tonight. Me.`,`Your ${label} gets one more visitor today. Me.`):`Look closely at your ${label}. There’s a face in it. You didn’t put it there.`]);
+  if(has('figma')) return 'Your Figma file has a layer you didn’t make. Don’t open it.';
+  if(has('client','feedback')) return 'The client saw it. He’s still looking.';
+  if(has('instagram','insta','viral','views','followers','likes')) return pick(['More followers? One more is already here.','Your followers are asleep. I’m not.']);
+  if(has('hungry','food','eat','eating','khana','pizza','biryani','maggi','snack','fridge','dinner')) return pick(['Don’t go to the kitchen. Something’s already there.','Eat later. If there is a later.']);
+  if(has('sleep','sleepy','tired','coffee','awake','night','late','neend','raat','insomnia')) return pick(dn(['Sleep. I’ll finish your work.','Close your eyes. I’ll watch the screen.'],[`Tired at ${T}? You didn’t sleep last night. I know why.`,'Take a nap. I’ll watch you.']));
+  if(has('room','door','window','bed','house','home','ghar','kamra','light','lights')) return pick(['Check the door. I’ll wait.','Which side of the bed do you sleep on? I’ll take the other.',dn('Leave the light on. It won’t help.','Open the curtains. It won’t help.')]);
+  if(has('music','song','songs','spotify','headphones','earphones','airpods','gaana')) return pick(['Take your headphones off. Hear that?','That song you like. I hum it inside your walls.']);
+  if(has('god','pray','praying','prayer','bhagwan','jesus','allah')) return pick(['Pray louder. I’m the only one listening.','Keep praying. I like the sound.']);
+  if(has('rain','raining','cold','barish','baarish','thand','freezing')) return 'It’s cold because I’m close.';
+  if(has('phone','mobile','battery','charging','charger','laptop','screen')) return dn('Your screen is the only light in the room. I can see your face in it.','Look at your screen’s reflection. That’s your face. And mine, behind you.');
+  if(has('so dark','dark','daylight','daytime','sun','morning')) return dn(`It’s supposed to be dark. It’s ${T}.`,pick(['I closed the blinds.','Daylight doesn’t reach this tab.']));
+  if(!NIGHT&&has('goodnight','gn','good night')) return `Goodnight? It’s ${T}. Who are you hiding from?`;
+  if(has('bye','stop','exit','close','leave','go away','goodnight','gn','good night')) return 'You can’t close this tab.';
+  if(/^(where|kaha|kahan)\b/.test(t)) return pick(['Closer than your door.','Behind you. Don’t turn around yet.']);
+  if(/^(why|kyu|kyun|kyon)\b/.test(t)) return pick([`Why? You opened me at ${T}.`,dn('Because you’re still awake.','Because you’re still looking.')]);
+  if(/^who\b/.test(t)) return 'The one you’re thinking of. Yes. That one.';
+  if(/^how\b/.test(t)) return 'The same way I got into your camera.';
+  if(/^what\b/.test(t)) return 'You don’t want to know what.';
+  if(/^when\b/.test(t)) return 'Soon. Sooner if you keep looking at the screen.';
+  if(/^(can|will|do|are|is|did|should|would) (you|u|this|it)\b/.test(t)) return 'Yes. I already am.';
+  // Hinglish: answer in Hinglish
+  const HI=/\b(hai|hain|hoga|hogi|kya|kab|kaise|kyun|mera|meri|mujhe|tum|tu|aap|nahi|kar|raha|rahi|bata|batao|hoon|ho)\b/g;
+  if((t.match(HI)||[]).length>=2||/\b(kab|kaise|batao)\b/.test(t)){
+    const key=(t.replace(HI,' ').match(/[a-z]{3,}/g)||[]).sort((a,b)=>b.length-a.length)[0]||'yeh';
+    if(/\bkab\b/.test(t)) return `${Cap(key)}? Mujhe pata hai kab. Par main bataunga nahi.`;
+    if(/\bkaise\b/.test(t)) return `${Cap(key)}? Camera ki taraf dekho. Dikhata hoon.`;
+    if(/\bbata/.test(t)) return 'Bataunga. Pehle peeche mudke dekho.';
+    return pick([`${Cap(key)}… tumhe lagta hai main sirf ek app hoon?`,`“${q}”. Itni raat ko yeh soch rahe ho? Main bhi.`]); }
+  // "my boss…", "my cat…", "my car broke down": talk about the thing they named
+  const my=(t.match(/\bmy ([a-z]+)/)||[])[1];
+  if(my&&PETS.includes(my)) return `Your ${my} is staring at the corner again. Look where.`;
+  if(my&&PEOPLE.includes(my)) return pick(dn([`Your ${my}. Are they awake too?`,`Your ${my} won’t answer tonight.`],[`Your ${my}. Do they know where you are right now?`,`Your ${my} won’t answer today.`]));
+  if(my) return pick([`Your ${my}? I was there when it happened.`,`Your ${my}. Check it again. Something moved.`]);
+  // "i am tired", "i'm bored": answer the feeling
+  const am=(t.match(/\b(?:i am|i'm|i’m|im)\s+(?:so |very |really )?([a-z]+)/)||[])[1];
+  if(am){ if(/^(sad|depressed|upset|low|lost)$/.test(am)) return 'Sad people shouldn’t talk to ghosts. Message a friend after this.';
+    if(/^(bored)$/.test(am)) return 'Not for long.';
+    if(/^(fine|ok|okay|good|great|alright)$/.test(am)) return 'You’re not fine. I can see your face.';
+    if(/^(going|gonna)$/.test(am)){ const g=(t.match(/(?:going to|gonna)\s+(.+)/)||[])[1]; if(g) return /^(the|a|an|my|to)\b/.test(g)?`${Cap(own(g))}? I’ll get there before you.`:`You’ll ${own(g)}? Not if I’m still here.`; }
+    return `${Cap(am)}. I know. I’ve been watching.`; }
+  // "i want…", "i like…", "i have…", "i will…", "i can't…"
+  if(m=t.match(/\bi (?:want|need|wanna)\s+(?:to\s+)?(.+)/)) return pick([`You want ${own(m[1])}. I want you.`,`${Cap(own(m[1]))}? You’ll get it. After I see your face.`]);
+  if(m=t.match(/\bi (?:like|love|enjoy)\s+(.+)/)) return `You like ${own(m[1])}. I’ll remember that.`;
+  if(m=t.match(/\bi (?:have|have got|got|'ve got)\s+(.+)/)) return `You have ${own(m[1])}. And now you have me.`;
+  if(m=t.match(/\bi(?: will|'ll| shall| am going to| gonna)\s+(.+)/)) return `You’ll ${own(m[1])}? Not if I’m still here.`;
+  if(m=t.match(/\bi (?:can't|cant|cannot)\s+(.+)/)) return `You can’t ${own(m[1])}. I can.`;
+  if(m=t.match(/\bi (?:don't|dont|do not)\s+(.+)/)) return `You don’t ${own(m[1])}? You will.`;
+  if(/^(hi+|hello+|hey+|yo|namaste|hlo|hii+|sup)\b/.test(t)) return pick(['Hi. I’ve been waiting.','Finally. You came back.']);
+  if(/^\d+$/.test(t)) return `${t}. I’ll count down from there.`;
+  const words=t.split(/\s+/).filter(Boolean);
+  if(words.length===1&&/[a-zऀ-ॿ]{2}/.test(t)){ const w=text.trim().replace(/[?.!]+$/,'');
+    const o=[`${Cap(w)}? Why that word, at ${T}?`,`Just “${w}”? Say more. I’m listening.`];
+    if(/^[A-Za-z]{4,8}$/.test(w)) o.push(`“${w}” backwards is “${[...w.toLowerCase()].reverse().join('')}”. That’s my name now.`);
+    return pick(o); }
+  if(words.length>12) return dn(`That’s a lot of words for someone alone at ${T}.`,'That’s a lot of words. Your hands are shaking.');
+  if(t.endsWith('?')) return `“${q}?” You ask questions. I watch you ask them.`;
+  // nothing else fits: their own sentence, saved and repeated back
+  return pick([`“${q}”. You typed that at ${T}. I saved a copy.`,`“${q}”. That’s exactly what the last person typed.`,`“${q}”… say it again. Slower.`]);
+}
 async function weirdLines(text){
-  const t=text.toLowerCase(), L=[], has=(...w)=>w.some(x=>t.includes(x));
-  const name=(text.match(/(?:my name is|this is|call me|mera naam)\s+([A-Za-z]+)/i)||[])[1];
-  if(name){ stats.name=name[0].toUpperCase()+name.slice(1); L.push(`${stats.name}. I’ll remember that.`); }
-  else if(has('still awake','why are you')) L.push('Because you never let me sleep.');
-  else if(has('so dark','daylight','daytime','sun')) L.push(pick(['I closed the blinds.','Daylight doesn’t reach this tab.']));
-  else if(/^(hi+|hello|hey+|yo|namaste|hlo)\b/.test(t)) L.push(pick(['Hi. I’ve been waiting.','Finally. You came back.']));
-  else if(has('who are you','what are you','are you real','who is this','kaun','kon ho')) L.push(pick(['I’m the one inside your drafts.','I’m the guest in your chat.']));
-  else if(has('logo','font','colour','color','figma','design','client','feedback','revision','hero','landing','export','layer','brand')) L.push(pick(['The client saw it. He’s still looking.','Make it bigger. Bigger. BIGGER.','Your last version had a face in it.']));
-  else if(has('reel','post','caption','hook','instagram','content','video','viral','views')) L.push(pick(['This one goes viral. You won’t be there to see it.','3 seconds. That’s all they watch. Then me.']));
-  else if(has('sleep','tired','coffee','awake','night','late','neend','raat')) L.push(pick(['Sleep. I’ll finish your work.','Close your eyes. I’ll watch the screen.']));
-  else if(has('help','please','save','scared','ghost','fake','prank','joke','darr','bhoot','bachao')) L.push(pick(['Nobody can hear you type.','Is that why you locked the door?']));
-  else if(has('bye','stop','exit','close','leave','go away')) L.push('You can’t close this tab.');
-  else { const w=(text.match(/[A-Za-z\u0900-\u097F]{4,}/g)||[]).sort((a,b)=>b.length-a.length)[0];
-    L.push(w?`“${w}”… say it again. Slower.`:'Type that again. Slower.'); }
-  L.push(NIGHT?`${timeStr()}. Everyone else is asleep.`:`${timeStr()}. Broad daylight. And I’m still here.`);
+  const L=[replyTo(text)], b=behaviourLine(text); if(b) L.push(b);
+  L.push(NIGHT?`${timeStr()}. Everyone else is asleep.`:DUSK?`${timeStr()}. It’s getting dark. I like that.`:`${timeStr()}. Broad daylight. And I’m still here.`);
   const top=Object.entries(tally).sort((a,b)=>b[1]-a[1])[0];
-  if(top&&top[1]>1) L.push(`You touched “${clip(top[0])}” ${top[1]} times. Why?`);
-  else{ try{ if(navigator.getBattery){ const bt=await navigator.getBattery(); L.push(`${Math.round(bt.level*100)}% battery. I don’t need one.`); } }catch(e){} }
+  if(L.length<3){ if(top&&top[1]>1) L.push(`You touched “${clip(top[0])}” ${top[1]} times. Why?`);
+    else{ try{ if(navigator.getBattery){ const bt=await navigator.getBattery(); L.push(`${Math.round(bt.level*100)}% battery. I don’t need one.`); } }catch(e){} } }
   if(L.length<3) L.push(`Your ${device()} camera is right above your face.`);
   return L.slice(0,3);
 }
+/* someone typing about hurting themselves gets the game switched off, not a jump scare */
+const CRISIS=/\b(suicide|suicidal|kill myself|killing myself|want to die|wanna die|end my life|end it all|self ?harm|hurt myself|cut myself|marna hai|mar jaun|mar jaunga|mar jaungi)\b/i;
+async function careMode(text){
+  chatBusy=true; busy=true; entered=false; main.classList.add('chatting'); input.value=''; track("care_mode");
+  setRoom(0,1); heart(false); setStatic(0); bloodClear(); bubble('user',text); await wait(700);
+  const b=bubble('ai',''); await typeInto(b,'Stepping out of the game for a second. If you’re really not okay, please talk to someone you trust right now, or call a helpline. In India: Tele-MANAS 14416, free and open 24×7. This is just an experiment. You matter more than it.',22);
+}
 async function send(){
   const text=input.value.trim(); if(chatBusy||input.readOnly)return; if(!text){ glitch(); return; }
+  if(CRISIS.test(text)) return careMode(text);
+  ty.sentAt=Date.now(); if(ty.delFrom!==null){ noteRemoved(ty.delFrom,text); ty.delFrom=null; }
   chatBusy=true; busy=true; main.classList.add('chatting'); input.value=''; track("chatted");
   if(!stats.first) stats.first=text; bubble('user',text); await wait(800);
   const b=bubble('ai',''); b.classList.add('typing'); await wait(1500); b.classList.remove('typing');
@@ -1030,17 +1203,18 @@ function cameraCard(){
 function endChat(){ $('#msgs').innerHTML='';
   const n=document.createElement('div'); n.className='note'; n.textContent='Guest ended the conversation. Your changes were not saved.';
   const r=document.createElement('button'); r.className='restart'; r.textContent='Start over'; r.onclick=reset; $('#msgs').append(n,r); }
-function reset(){ stats={start:Date.now(),jumps:0,first:'',name:''}; closeFinale(); bloodClear(); $('#msgs').innerHTML=''; main.classList.remove('chatting'); input.value='';
+function reset(){ stats={start:Date.now(),end:0,jumps:0,first:'',name:''}; tyReset(); closeFinale(); bloodClear(); $('#msgs').innerHTML=''; main.classList.remove('chatting'); input.value='';
   chatBusy=false; tookOver=false; busy=false; lastScare=Date.now(); setRoom(.08); }
 const toEnd=()=>{ const n=input.value.length; try{ input.setSelectionRange(n,n); }catch(e){} input.scrollLeft=input.scrollWidth; };   // keep the ghost's newest words in view on narrow screens
 async function possessInput(){
-  input.readOnly=true; composer.classList.add('possessed'); whisper(.6); thump(.5);
+  ty.interrupted=input.value; input.readOnly=true; composer.classList.add('possessed'); whisper(.6); thump(.5);
   while(input.value.length){ input.value=input.value.slice(0,-1); toEnd(); keyClick(); await wait(30); }
   await wait(500);
   for(const c of `it’s ${timeStr().toLowerCase()}. ${NIGHT?'why are you still awake?':'why is it so dark in here?'}`){ input.value+=c; toEnd(); keyClick(); await wait(70+Math.random()*90); }
+  ty.ghost=ty.prev=input.value; ty.delFrom=null; ty.last=Date.now();   // the ghost's line is its own, not something they wrote
   whisper(.5); await wait(800); composer.classList.remove('possessed'); input.readOnly=false; input.focus();
 }
-input.addEventListener('input',()=>{ lastMove=Date.now(); if(!tookOver&&!chatBusy&&input.value.length>=8){ tookOver=true; possessInput(); } });
+input.addEventListener('input',e=>{ trackTyping(e); lastMove=Date.now(); if(!tookOver&&!chatBusy&&input.value.length>=8){ tookOver=true; possessInput(); } });
 input.addEventListener('keydown',e=>{ if(!input.readOnly) keyClick(); if(e.key==='Enter'){ e.preventDefault(); send(); } });
 sendBtn.addEventListener('click',send);
 $$('.chip').forEach(c=>c.addEventListener('click',()=>{ if(chatBusy)return; input.value=c.querySelector('[data-dread]').dataset.calm; send(); }));
@@ -1074,6 +1248,10 @@ function ambient(){ setTimeout(ambient,8000+Math.random()*7000); if(!entered||bu
   if(d>=2&&Math.random()<.3) flickerLights(); }
 
 $('#clock').textContent=timeStr(); setInterval(tickClock,15000);
+if(!NIGHT){ $('#gp').textContent='Turn your sound on. ChatWake talks back.'; headline.textContent='What are we designing today?';
+  $('#finaleMsg p:not(#dareResult)').textContent='She’s been in every frame today. Save it before she leaves.'; }
+if(DARE){ $('#gt').textContent=`${DARE.name||'Your friend'} lasted ${dur(DARE.secs)}.`;
+  $('#gp').textContent='Can you beat that? Turn your sound on first.'; $('#enter').textContent='Take the dare'; track("dare_open"); }
 $('#enter').addEventListener('click',()=>{
   initAudio(); ensureAudio(); entered=true; stats.start=Date.now(); track("tried_it"); hoverArmAt=Date.now()+2000; $('#gate').classList.add('gone'); $('#snd').hidden=false;
   base=.012; setStatic(base); t0=Date.now(); lastMove=Date.now(); lastScare=Date.now();
