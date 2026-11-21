@@ -307,6 +307,8 @@ kbd{display:inline-block;min-width:20px;padding:1px 6px;border:1px solid rgba(25
   .chip .ico{width:16px;height:16px;margin-top:1px}
   .composer{order:2}
   main.chatting .hero{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+  #thread{padding-top:48px}
+  #snd{left:auto;right:16px;bottom:auto;top:calc(62px + env(safe-area-inset-top,0px));font-size:12px;padding:5px 11px}   /* the composer owns the bottom on phones */
 }
 @media (prefers-reduced-motion:reduce){
   .app.glitch,.app.shake,.item.possessed,.profile.possessed{animation:none}
