@@ -468,6 +468,7 @@ function device(){ const u=navigator.userAgent; return /iPhone/.test(u)?'iPhone'
 
 /* ================= sound ================= */
 let ctx=null, master=null, room=null, muted=false;
+const shakePhone=p=>{ try{ if(entered&&navigator.vibrate) navigator.vibrate(p); }catch(e){} };   // Android feels the scares; iOS ignores this
 function initAudio(){
   try{
     ctx=new (window.AudioContext||window.webkitAudioContext)();
@@ -578,7 +579,7 @@ function scream(vol=.6){ if(!ctx)return; const t=ctx.currentTime, o=ctx.createOs
 function clang(vol=.5){ if(!ctx)return; const t=ctx.currentTime, g=env(vol,.001,.9,t), hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=900; hp.connect(g); out(g);
   [1234,1876,2711,3517].forEach(f=>{ const o=ctx.createOscillator(), og=ctx.createGain(); o.type='square'; o.frequency.value=f*(1+Math.random()*.02); og.gain.value=.15; o.connect(og); og.connect(hp); o.start(t); o.stop(t+1); }); }
 let hbTimer=null, bpm=70;
-function heart(on,rate){ clearTimeout(hbTimer); if(rate)bpm=rate; if(!on)return; (function beat(){ thump(.6); setTimeout(()=>thump(.38),200); hbTimer=setTimeout(beat,60000/bpm); })(); }
+function heart(on,rate){ clearTimeout(hbTimer); if(rate)bpm=rate; if(!on)return; (function beat(){ thump(.6); setTimeout(()=>thump(.38),200); if(isTouch) shakePhone([35,165,25]); hbTimer=setTimeout(beat,60000/bpm); })(); }
 
 /* ================= static ================= */
 const cv=$('#static'), sx=cv.getContext('2d'); cv.width=160; cv.height=100;
@@ -776,7 +777,7 @@ function paintFinale(){
   if(Math.random()<.06){ g.fillStyle=`rgba(0,0,0,${Math.random()*.3})`; g.fillRect(0,0,w,h); }
   vignette(g,w,h,fin.frozen?.6:.85); grain(g,w,h,.11); hud(g,w,h);
 }
-function jolt(ms){ const f=$('#finale'); f.classList.add('shake','flash'); setTimeout(()=>f.classList.remove('flash'),90); setTimeout(()=>f.classList.remove('shake'),ms); }
+function jolt(ms){ shakePhone(ms>=500?[200,60,320]:45); const f=$('#finale'); f.classList.add('shake','flash'); setTimeout(()=>f.classList.remove('flash'),90); setTimeout(()=>f.classList.remove('shake'),ms); }
 async function finale(live){
   busy=true; chatBusy=true; fin={on:true,color:1,fig:0,figTarget:0,glitch:0,orb:0,echo:0,close:false,frozen:false};
   colorNow=1; snap=null; $('#finale').classList.add('on'); $('#finaleMsg').classList.remove('on');
@@ -883,7 +884,7 @@ const scv=$('#scare canvas'), scg=scv.getContext('2d'); let scaring=false;
 function sizeScare(){ const ar=innerHeight/innerWidth; scv.width=480; scv.height=Math.round(480*ar); } sizeScare(); addEventListener('resize',sizeScare);
 function jumpscare(after){
   const s=$('#scare'); scaring=true; stats.jumps++; s.classList.remove('go'); void s.offsetWidth; s.classList.add('go');
-  app.classList.add('shake'); screech(); setStatic(.35);
+  app.classList.add('shake'); screech(); setStatic(.35); shakePhone([90,40,260]);
   setTimeout(()=>{ s.classList.remove('go'); scaring=false; app.classList.remove('shake'); setStatic(base); lastScare=Date.now(); if(after)after(); },1200);
 }
 
@@ -944,6 +945,8 @@ function ghostTick(){
 }
 const dodgers=()=>$$('aside .item');
 addEventListener('pointerdown',()=>{ lastMove=Date.now(); });
+/* phones have no cursor to drift near the figure, so touching the dark is what sets it off */
+addEventListener('pointerdown',e=>{ if(e.pointerType!=='mouse'&&document.body.classList.contains('dark')&&figLive){ figLive=false; jumpscare(lightsOn); } });
 addEventListener('pointermove',e=>{
   px=e.clientX; py=e.clientY; lastMove=Date.now();
   hist.push({t:lastMove,x:px,y:py}); while(hist.length&&hist[0].t<lastMove-4000) hist.shift();
@@ -1178,7 +1181,7 @@ async function weirdLines(text){
 const CRISIS=/\b(suicide|suicidal|kill myself|killing myself|want to die|wanna die|end my life|end it all|self ?harm|hurt myself|cut myself|marna hai|mar jaun|mar jaunga|mar jaungi)\b/i;
 async function careMode(text){
   chatBusy=true; busy=true; entered=false; main.classList.add('chatting'); input.value=''; track("care_mode");
-  setRoom(0,1); heart(false); setStatic(0); bloodClear(); bubble('user',text); await wait(700);
+  setRoom(0,1); heart(false); shakePhone(0); setStatic(0); bloodClear(); bubble('user',text); await wait(700);
   const b=bubble('ai',''); await typeInto(b,'Stepping out of the game for a second. If you’re really not okay, please talk to someone you trust right now, or call a helpline. In India: Tele-MANAS 14416, free and open 24×7. This is just an experiment. You matter more than it.',22);
 }
 async function send(){
